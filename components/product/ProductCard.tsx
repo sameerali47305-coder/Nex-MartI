@@ -1,8 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, ShoppingCart, Star } from "lucide-react";
 
 import { UIProduct } from "@/lib/serializers";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 interface ProductCardProps {
   product: UIProduct;
@@ -11,6 +15,10 @@ interface ProductCardProps {
 export default function ProductCard({
   product,
 }: ProductCardProps) {
+  const { addToCart } = useCart();
+  const { toggleWishlist, isWishlisted } = useWishlist();
+  const wishlisted = isWishlisted(product.id);
+
   return (
     <div className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 
@@ -29,8 +37,16 @@ export default function ProductCard({
           </span>
         )}
 
-        <button className="absolute right-3 top-3 z-10 rounded-full bg-white p-2 shadow transition hover:bg-red-500 hover:text-white">
-          <Heart size={18} />
+        <button
+          onClick={() => toggleWishlist(product)}
+          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          className={`absolute right-3 top-3 z-10 rounded-full p-2 shadow transition ${
+            wishlisted
+              ? "bg-red-500 text-white"
+              : "bg-white text-gray-900 hover:bg-red-500 hover:text-white"
+          }`}
+        >
+          <Heart size={18} className={wishlisted ? "fill-current" : ""} />
         </button>
 
         <Link href={`/products/${product.id}`} className="relative block h-full w-full">
@@ -91,11 +107,15 @@ export default function ProductCard({
         </div>
 
         {/* Add to Cart */}
-        <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700">
+        <button
+          onClick={() => addToCart(product, 1)}
+          disabled={product.stock === 0}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+        >
 
           <ShoppingCart size={18} />
 
-          Add to Cart
+          {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
 
         </button>
 

@@ -1,6 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import { Heart, ShoppingCart, Star } from "lucide-react";
+
 import { UIProduct } from "@/lib/serializers";
 import QuantitySelector from "./QuantitySelector";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 interface ProductInfoProps {
   product: UIProduct;
@@ -9,6 +15,25 @@ interface ProductInfoProps {
 export default function ProductInfo({
   product,
 }: ProductInfoProps) {
+  const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
+  const { toggleWishlist, isWishlisted } = useWishlist();
+  const wishlisted = isWishlisted(product.id);
+
+  const increase = () => {
+    setQuantity((prev) =>
+      product.stock ? Math.min(prev + 1, product.stock) : prev + 1
+    );
+  };
+
+  const decrease = () => {
+    setQuantity((prev) => Math.max(1, prev - 1));
+  };
+
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+  };
+
   return (
     <div className="space-y-6">
 
@@ -58,26 +83,56 @@ export default function ProductInfo({
 
       {/* Description */}
       <p className="leading-7 text-gray-600">
-  {product.description}
-</p>
+        {product.description}
+      </p>
+
+      {/* Stock status */}
+      {product.stock > 0 ? (
+        <p className="text-sm font-medium text-green-600">
+          In Stock ({product.stock} available)
+        </p>
+      ) : (
+        <p className="text-sm font-medium text-red-600">
+          Out of Stock
+        </p>
+      )}
 
       {/* Quantity */}
-      <QuantitySelector />
+      {product.stock > 0 && (
+        <QuantitySelector
+          quantity={quantity}
+          onIncrease={increase}
+          onDecrease={decrease}
+          max={product.stock}
+        />
+      )}
 
       {/* Buttons */}
       <div className="flex flex-wrap gap-4">
 
-        <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-3 font-medium text-white transition hover:bg-blue-700">
+        <button
+          onClick={handleAddToCart}
+          disabled={product.stock === 0}
+          className="flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+        >
 
           <ShoppingCart size={20} />
 
-          Add to Cart
+          {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
 
         </button>
 
-        <button className="rounded-lg border border-gray-300 p-3 transition hover:bg-gray-100">
+        <button
+          onClick={() => toggleWishlist(product)}
+          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          className={`rounded-lg border p-3 transition ${
+            wishlisted
+              ? "border-red-500 bg-red-500 text-white"
+              : "border-gray-300 hover:bg-gray-100"
+          }`}
+        >
 
-          <Heart size={20} />
+          <Heart size={20} className={wishlisted ? "fill-current" : ""} />
 
         </button>
 

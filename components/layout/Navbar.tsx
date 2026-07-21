@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 
 import Container from "@/components/ui/Container";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -23,6 +25,8 @@ const navLinks = [
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { itemCount } = useCart();
+  const { items: wishlistItems } = useWishlist();
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -60,13 +64,29 @@ export default function Navbar() {
           {/* Right Side */}
           <div className="flex items-center gap-5">
 
-            <button className="hidden transition hover:text-blue-600 md:inline-flex">
+            <Link
+              href="/wishlist"
+              className="relative hidden transition hover:text-blue-600 md:inline-flex"
+            >
               <Heart size={22} />
-            </button>
+              {wishlistItems.length > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-xs font-semibold text-white">
+                  {wishlistItems.length}
+                </span>
+              )}
+            </Link>
 
-            <button className="hidden transition hover:text-blue-600 md:inline-flex">
+            <Link
+              href="/cart"
+              className="relative hidden transition hover:text-blue-600 md:inline-flex"
+            >
               <ShoppingCart size={22} />
-            </button>
+              {itemCount > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-xs font-semibold text-white">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
 
             <button className="hidden transition hover:text-blue-600 md:inline-flex">
               <User size={22} />
@@ -149,12 +169,30 @@ export default function Navbar() {
               ))}
 
               <div className="mt-2 flex items-center gap-5 border-t px-3 pt-4">
-                <button className="transition hover:text-blue-600">
+                <Link
+                  href="/wishlist"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="relative transition hover:text-blue-600"
+                >
                   <Heart size={22} />
-                </button>
-                <button className="transition hover:text-blue-600">
+                  {wishlistItems.length > 0 && (
+                    <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-xs font-semibold text-white">
+                      {wishlistItems.length}
+                    </span>
+                  )}
+                </Link>
+                <Link
+                  href="/cart"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="relative transition hover:text-blue-600"
+                >
                   <ShoppingCart size={22} />
-                </button>
+                  {itemCount > 0 && (
+                    <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-xs font-semibold text-white">
+                      {itemCount}
+                    </span>
+                  )}
+                </Link>
                 <button className="transition hover:text-blue-600">
                   <User size={22} />
                 </button>

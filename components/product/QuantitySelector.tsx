@@ -1,20 +1,18 @@
 "use client";
 
-import { useState } from "react";
+interface QuantitySelectorProps {
+  quantity: number;
+  onIncrease: () => void;
+  onDecrease: () => void;
+  max?: number;
+}
 
-export default function QuantitySelector() {
-  const [quantity, setQuantity] = useState(1);
-
-  const increase = () => {
-    setQuantity((prev) => prev + 1);
-  };
-
-  const decrease = () => {
-    if (quantity > 1) {
-      setQuantity((prev) => prev - 1);
-    }
-  };
-
+export default function QuantitySelector({
+  quantity,
+  onIncrease,
+  onDecrease,
+  max,
+}: QuantitySelectorProps) {
   return (
     <div className="flex items-center gap-4">
 
@@ -25,8 +23,9 @@ export default function QuantitySelector() {
       <div className="flex items-center rounded-lg border">
 
         <button
-          onClick={decrease}
-          className="px-4 py-2 text-lg hover:bg-gray-100"
+          onClick={onDecrease}
+          disabled={quantity <= 1}
+          className="px-4 py-2 text-lg hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
         >
           -
         </button>
@@ -36,8 +35,9 @@ export default function QuantitySelector() {
         </span>
 
         <button
-          onClick={increase}
-          className="px-4 py-2 text-lg hover:bg-gray-100"
+          onClick={onIncrease}
+          disabled={max !== undefined && quantity >= max}
+          className="px-4 py-2 text-lg hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
         >
           +
         </button>
