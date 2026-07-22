@@ -10,6 +10,7 @@ import {
 import toast from "react-hot-toast";
 
 import { UIProduct } from "@/lib/serializers";
+import { useAuth } from "@/context/AuthContext";
 
 export interface CartItem {
   id: string;
@@ -23,7 +24,7 @@ export interface CartItem {
 
 interface CartContextValue {
   items: CartItem[];
-  addToCart: (product: UIProduct, quantity?: number) => void;
+  addToCart: (product: UIProduct, quantity?: number) => boolean;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -36,6 +37,7 @@ const CART_STORAGE_KEY = "nexmart_cart";
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -63,7 +65,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items, isHydrated]);
 
-  const addToCart = (product: UIProduct, quantity: number = 1) => {
+  const addToCart = (product: UIProduct, quantity: number = 1): boolean => {
+    if (!isAuthenticated) {
+      toast.error("Please login to add items to your cart");
+      return false;
+    }
+
     // Compute the new state first, then call setItems + toast as
     // separate steps. Calling toast() from inside the setState updater
     // is a side effect during render and triggers React's "Cannot
@@ -99,6 +106,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     toast.success(`${product.name} added to cart`);
+    return true;
   };
 
   const removeFromCart = (productId: string) => {

@@ -15,9 +15,19 @@ interface ProductCardProps {
 export default function ProductCard({
   product,
 }: ProductCardProps) {
-  const { addToCart } = useCart();
-  const { toggleWishlist, isWishlisted } = useWishlist();
+ const { addToCart } = useCart();
+  const { toggleWishlist, removeFromWishlist, isWishlisted } = useWishlist();
   const wishlisted = isWishlisted(product.id);
+
+  const handleAddToCart = () => {
+    const added = addToCart(product, 1);
+
+    // Moving an item into the cart should take it off the wishlist —
+    // only do this if it actually got added (i.e. the user was logged in).
+    if (added && wishlisted) {
+      removeFromWishlist(product.id);
+    }
+  };
 
   return (
     <div className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -108,7 +118,8 @@ export default function ProductCard({
 
         {/* Add to Cart */}
         <button
-          onClick={() => addToCart(product, 1)}
+    
+          onClick={handleAddToCart}
           disabled={product.stock === 0}
           className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
         >

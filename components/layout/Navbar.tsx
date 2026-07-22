@@ -2,16 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import {
   Search,
   Heart,
   ShoppingCart,
   User,
+  LogOut,
   Menu,
   X,
 } from "lucide-react";
 
 import Container from "@/components/ui/Container";
+import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 
@@ -24,9 +28,18 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
   const { itemCount } = useCart();
   const { items: wishlistItems } = useWishlist();
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Logged out successfully");
+    setIsMenuOpen(false);
+    router.push("/");
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -88,16 +101,30 @@ export default function Navbar() {
               )}
             </Link>
 
-            <button className="hidden transition hover:text-blue-600 md:inline-flex">
-              <User size={22} />
-            </button>
-
-            <Link
-              href="/login"
-              className="hidden rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700 md:inline-block"
-            >
-              Login
-            </Link>
+            {/* Auth area (desktop) */}
+            {isAuthenticated ? (
+              <div className="hidden items-center gap-3 md:flex">
+                <span className="flex items-center gap-1.5 text-sm font-medium text-gray-900">
+                  <User size={18} className="text-blue-600" />
+                  {user?.name}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  aria-label="Logout"
+                  className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:border-red-500 hover:text-red-500"
+                >
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700 md:inline-block"
+              >
+                Login
+              </Link>
+            )}
 
             {/* Mobile menu toggle */}
             <button
@@ -193,18 +220,32 @@ export default function Navbar() {
                     </span>
                   )}
                 </Link>
-                <button className="transition hover:text-blue-600">
-                  <User size={22} />
-                </button>
               </div>
 
-              <Link
-                href="/login"
-                onClick={() => setIsMenuOpen(false)}
-                className="mt-3 rounded-lg bg-blue-600 px-5 py-3 text-center text-white transition hover:bg-blue-700"
-              >
-                Login
-              </Link>
+              {/* Auth area (mobile) */}
+              {isAuthenticated ? (
+                <div className="mt-3 space-y-2 border-t px-3 pt-4">
+                  <p className="flex items-center gap-1.5 text-sm font-medium text-gray-900">
+                    <User size={18} className="text-blue-600" />
+                    {user?.name}
+                  </p>
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 py-3 text-sm font-medium text-gray-700 transition hover:border-red-500 hover:text-red-500"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="mt-3 rounded-lg bg-blue-600 px-5 py-3 text-center text-white transition hover:bg-blue-700"
+                >
+                  Login
+                </Link>
+              )}
 
             </div>
 

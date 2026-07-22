@@ -7,10 +7,12 @@ import toast from "react-hot-toast";
 import { Loader2, Mail, Lock } from "lucide-react";
 
 import Container from "@/components/ui/Container";
-import { loginRequest, saveToken } from "@/helpers/authApi";
+import { loginRequest } from "@/helpers/authApi";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
 
@@ -29,8 +31,8 @@ export default function LoginPage() {
       // production deployment prefer having the server set it as an
       // HTTP-only cookie instead — that keeps it out of reach of any
       // JavaScript running on the page (protects against XSS token theft).
-      if (res.data?.token) {
-        saveToken(res.data.token);
+      if (res.data?.token && res.data?.user) {
+        login(res.data.user, res.data.token);
       }
 
       toast.success("Welcome back!");

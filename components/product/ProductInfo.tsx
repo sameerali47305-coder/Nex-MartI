@@ -16,8 +16,8 @@ export default function ProductInfo({
   product,
 }: ProductInfoProps) {
   const [quantity, setQuantity] = useState(1);
-  const { addToCart } = useCart();
-  const { toggleWishlist, isWishlisted } = useWishlist();
+const { addToCart } = useCart();
+  const { toggleWishlist, removeFromWishlist, isWishlisted } = useWishlist();
   const wishlisted = isWishlisted(product.id);
 
   const increase = () => {
@@ -30,8 +30,14 @@ export default function ProductInfo({
     setQuantity((prev) => Math.max(1, prev - 1));
   };
 
-  const handleAddToCart = () => {
-    addToCart(product, quantity);
+const handleAddToCart = () => {
+    const added = addToCart(product, quantity);
+
+    // Moving an item into the cart should take it off the wishlist —
+    // only do this if it actually got added (i.e. the user was logged in).
+    if (added && wishlisted) {
+      removeFromWishlist(product.id);
+    }
   };
 
   return (
