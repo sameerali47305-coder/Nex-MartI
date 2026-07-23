@@ -8,9 +8,7 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
-  // Some antivirus/network setups (common on Windows) intercept HTTPS with
-  // their own certificate, which Node rejects by default. Only relax
-  // certificate checking in local development, never in production.
+
   tls: {
     rejectUnauthorized: process.env.NODE_ENV === "production",
   },
@@ -33,6 +31,27 @@ export async function sendOtpEmail(to: string, name: string, otp: string) {
         <p style="color:#6b7280;font-size:13px;">
           This code expires in 10 minutes. If you didn't create this account, you can ignore this email.
         </p>
+      </div>
+    `,
+  });
+}
+export async function sendContactMessage(
+  name: string,
+  email: string,
+  subject: string,
+  message: string
+) {
+  await transporter.sendMail({
+    from: `"NexMart Contact Form" <${process.env.EMAIL_FROM}>`,
+    to: process.env.EMAIL_FROM,
+    replyTo: email,
+    subject: `[Contact] ${subject}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
+        <h2 style="color:#2563eb;">New contact message</h2>
+        <p><strong>From:</strong> ${name} (${email})</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p style="white-space: pre-wrap; margin-top:16px;">${message}</p>
       </div>
     `,
   });
