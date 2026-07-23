@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, ShoppingCart, Star } from "lucide-react";
@@ -7,34 +8,48 @@ import { Heart, ShoppingCart, Star } from "lucide-react";
 import { UIProduct } from "@/lib/serializers";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useFlyToCart } from "@/components/common/FlyToCart";
 
 interface ProductCardProps {
   product: UIProduct;
 }
 
-export default function ProductCard({
-  product,
-}: ProductCardProps) {
+export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toggleWishlist, removeFromWishlist, isWishlisted } = useWishlist();
   const wishlisted = isWishlisted(product.id);
 
+  const imageRef = useRef<HTMLDivElement>(null);
+  const flyToCart = useFlyToCart();
+
   const handleAddToCart = async () => {
+    const cartIcon = document.getElementById("cart-icon");
+
+    await flyToCart(imageRef.current, cartIcon);
+
     const added = await addToCart(product, 1);
 
-    // Moving an item into the cart should take it off the wishlist —
-    // only do this if it actually got added (i.e. the user was logged in).
     if (added && wishlisted) {
-      removeFromWishlist(product.id);
+      await removeFromWishlist(product.id);
     }
+  };
+
+  const handleWishlist = async () => {
+    if (!wishlisted) {
+      const wishlistIcon = document.getElementById("wishlist-icon");
+      await flyToCart(imageRef.current, wishlistIcon);
+    }
+
+    await toggleWishlist(product);
   };
 
   return (
     <div className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-
-      {/* UIProduct Image */}
-      <div className="relative h-64 overflow-hidden bg-gray-100">
-
+      {/* Image wrapper with attached ref */}
+      <div
+        ref={imageRef}
+        className="relative h-64 overflow-hidden bg-gray-100"
+      >
         {product.isSale && (
           <span className="absolute left-3 top-3 z-10 rounded bg-red-500 px-2 py-1 text-xs font-semibold text-white">
             SALE
@@ -48,7 +63,7 @@ export default function ProductCard({
         )}
 
         <button
-          onClick={() => toggleWishlist(product)}
+          onClick={handleWishlist}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
           className={`absolute right-3 top-3 z-10 rounded-full p-2 shadow transition ${
             wishlisted
@@ -59,7 +74,10 @@ export default function ProductCard({
           <Heart size={18} className={wishlisted ? "fill-current" : ""} />
         </button>
 
-        <Link href={`/products/${product.id}`} className="relative block h-full w-full">
+        <Link
+          href={`/products/${product.id}`}
+          className="relative block h-full w-full"
+        >
           <Image
             src={product.image}
             alt={product.name}
@@ -68,15 +86,11 @@ export default function ProductCard({
             className="object-contain p-6 transition duration-300 group-hover:scale-105"
           />
         </Link>
-
       </div>
 
       {/* UIProduct Info */}
       <div className="space-y-3 p-5">
-
-        <p className="text-sm text-blue-600">
-          {product.category}
-        </p>
+        <p className="text-sm text-blue-600">{product.category}</p>
 
         <Link href={`/products/${product.id}`}>
           <h3 className="line-clamp-2 text-lg font-semibold transition hover:text-blue-600">
@@ -86,7 +100,6 @@ export default function ProductCard({
 
         {/* Rating */}
         <div className="flex items-center gap-1">
-
           {[...Array(product.rating)].map((_, index) => (
             <Star
               key={index}
@@ -98,12 +111,10 @@ export default function ProductCard({
           <span className="ml-2 text-sm text-gray-500">
             ({product.reviews})
           </span>
-
         </div>
 
         {/* Price */}
         <div className="flex items-center gap-3">
-
           <span className="text-2xl font-bold text-blue-600">
             ${product.price}
           </span>
@@ -113,7 +124,6 @@ export default function ProductCard({
               ${product.oldPrice}
             </span>
           )}
-
         </div>
 
         {/* Add to Cart */}
@@ -122,15 +132,10 @@ export default function ProductCard({
           disabled={product.stock === 0}
           className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
         >
-
           <ShoppingCart size={18} />
-
           {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
-
         </button>
-
       </div>
-
     </div>
   );
 }

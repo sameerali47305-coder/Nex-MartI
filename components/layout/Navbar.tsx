@@ -77,8 +77,10 @@ export default function Navbar() {
           {/* Right Side */}
           <div className="flex items-center gap-5">
 
+            {/* Desktop Wishlist Link with id="wishlist-icon" */}
             <Link
               href="/wishlist"
+              id="wishlist-icon"
               className="relative hidden transition hover:text-blue-600 md:inline-flex"
             >
               <Heart size={22} />
@@ -89,8 +91,10 @@ export default function Navbar() {
               )}
             </Link>
 
+            {/* Desktop Cart Link with id="cart-icon" */}
             <Link
               href="/cart"
+              id="cart-icon"
               className="relative hidden transition hover:text-blue-600 md:inline-flex"
             >
               <ShoppingCart size={22} />
@@ -196,7 +200,9 @@ export default function Navbar() {
               ))}
 
               <div className="mt-2 flex items-center gap-5 border-t px-3 pt-4">
+                {/* Mobile Wishlist Link with id="wishlist-icon" */}
                 <Link
+                  id="wishlist-icon"
                   href="/wishlist"
                   onClick={() => setIsMenuOpen(false)}
                   className="relative transition hover:text-blue-600"
@@ -208,7 +214,10 @@ export default function Navbar() {
                     </span>
                   )}
                 </Link>
+
+                {/* Mobile Cart Link with id="cart-icon" */}
                 <Link
+                  id="cart-icon"
                   href="/cart"
                   onClick={() => setIsMenuOpen(false)}
                   className="relative transition hover:text-blue-600"
