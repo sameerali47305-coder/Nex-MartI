@@ -15,12 +15,12 @@ interface ProductCardProps {
 export default function ProductCard({
   product,
 }: ProductCardProps) {
- const { addToCart } = useCart();
+  const { addToCart } = useCart();
   const { toggleWishlist, removeFromWishlist, isWishlisted } = useWishlist();
   const wishlisted = isWishlisted(product.id);
 
-  const handleAddToCart = () => {
-    const added = addToCart(product, 1);
+  const handleAddToCart = async () => {
+    const added = await addToCart(product, 1);
 
     // Moving an item into the cart should take it off the wishlist —
     // only do this if it actually got added (i.e. the user was logged in).
@@ -118,7 +118,6 @@ export default function ProductCard({
 
         {/* Add to Cart */}
         <button
-    
           onClick={handleAddToCart}
           disabled={product.stock === 0}
           className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"

@@ -4,7 +4,7 @@ import { useEffect, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { CreditCard, Truck } from "lucide-react";
-
+import { getToken } from "@/helpers/authApi";
 import Container from "@/components/ui/Container";
 import { useCart } from "@/context/CartContext";
 
@@ -75,7 +75,7 @@ export default function CheckoutPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!validate()) {
@@ -85,12 +85,30 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
 
-    // Simulated order placement — real payment integration comes in Week 4
-    setTimeout(() => {
+    try {
+      const token = getToken();
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ shippingAddress: form, paymentMethod }),
+      });
+
+      const body = await res.json();
+      if (!res.ok) {
+        throw new Error(body.message || "Failed to place order");
+      }
+
       toast.success("Order placed successfully!");
       clearCart();
       router.push("/order-confirmation");
-    }, 800);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to place order");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (items.length === 0) {
@@ -100,24 +118,20 @@ export default function CheckoutPage() {
   return (
     <main className="bg-gray-50 py-10">
       <Container>
-
         <h1 className="mb-8 text-3xl font-bold text-gray-900">
           Checkout
         </h1>
 
         <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-3">
-
           <div className="space-y-8 lg:col-span-2">
 
             {/* Shipping Address */}
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-
               <h2 className="mb-4 text-lg font-semibold text-gray-900">
                 Shipping Address
               </h2>
 
               <div className="grid gap-4 sm:grid-cols-2">
-
                 <div className="sm:col-span-2">
                   <label className="mb-1 block text-sm font-medium text-gray-900">
                     Full Name
@@ -207,20 +221,16 @@ export default function CheckoutPage() {
                     <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
                   )}
                 </div>
-
               </div>
-
             </div>
 
             {/* Payment Method */}
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-
               <h2 className="mb-4 text-lg font-semibold text-gray-900">
                 Payment Method
               </h2>
 
               <div className="space-y-3">
-
                 <label
                   className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition ${
                     paymentMethod === "card"
@@ -256,20 +266,16 @@ export default function CheckoutPage() {
                   <Truck size={20} className="text-blue-600" />
                   <span className="font-medium text-gray-900">Cash on Delivery</span>
                 </label>
-
               </div>
 
               <p className="mt-4 text-sm text-gray-500">
                 Payment integration is coming soon — no charges will be made yet.
               </p>
-
             </div>
-
           </div>
 
           {/* Order Summary */}
           <div className="h-fit rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-
             <h2 className="mb-4 text-lg font-semibold text-gray-900">
               Order Summary
             </h2>
@@ -288,7 +294,6 @@ export default function CheckoutPage() {
             </div>
 
             <div className="mt-4 space-y-3 text-sm">
-
               <div className="flex items-center justify-between text-gray-500">
                 <span>Subtotal</span>
                 <span className="font-medium text-gray-900">
@@ -309,7 +314,6 @@ export default function CheckoutPage() {
                   ${total.toFixed(2)}
                 </span>
               </div>
-
             </div>
 
             <button
@@ -319,11 +323,8 @@ export default function CheckoutPage() {
             >
               {isSubmitting ? "Placing Order..." : "Place Order"}
             </button>
-
           </div>
-
         </form>
-
       </Container>
     </main>
   );

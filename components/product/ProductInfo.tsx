@@ -29,9 +29,8 @@ const { addToCart } = useCart();
   const decrease = () => {
     setQuantity((prev) => Math.max(1, prev - 1));
   };
-
-const handleAddToCart = () => {
-    const added = addToCart(product, quantity);
+const handleAddToCart = async () => {
+    const added = await addToCart(product, quantity);
 
     // Moving an item into the cart should take it off the wishlist —
     // only do this if it actually got added (i.e. the user was logged in).
