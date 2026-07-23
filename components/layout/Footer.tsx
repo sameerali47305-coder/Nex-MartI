@@ -3,7 +3,6 @@ import {
   Globe,
   Send,
   MessageCircle,
-  Mail,
   Truck,
   ShieldCheck,
   RotateCcw,
@@ -11,7 +10,7 @@ import {
 } from "lucide-react";
 
 import Container from "@/components/ui/Container";
-
+import NewsletterForm from "./NewsletterForm";
 const shopLinks = [
   { href: "/products", label: "All Products" },
   { href: "/categories", label: "Categories" },
@@ -78,25 +77,7 @@ export default function Footer() {
               payments, and quality you can trust.
             </p>
 
-            <form className="mt-5 flex max-w-sm gap-2">
-              <div className="relative flex-1">
-                <Mail
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-300"
-                />
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  className="w-full rounded-lg border border-white/15 bg-white/5 py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-blue-300 outline-none transition focus:border-orange-400 focus-visible:ring-2 focus-visible:ring-orange-400/50"
-                />
-              </div>
-              <button
-                type="submit"
-                className="rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
-              >
-                Subscribe
-              </button>
-            </form>
+           <NewsletterForm />
 
             <div className="mt-6 flex gap-4">
               <a

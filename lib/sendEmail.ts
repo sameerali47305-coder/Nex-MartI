@@ -56,3 +56,20 @@ export async function sendContactMessage(
     `,
   });
 }
+export async function sendSubscriptionConfirmation(email: string) {
+  await transporter.sendMail({
+    from: `"NexMart" <${process.env.EMAIL_FROM}>`,
+    to: email,
+    subject: "You're subscribed to NexMart!",
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
+        <h2 style="color:#2563eb;">You're in!</h2>
+        <p>Thanks for subscribing to the NexMart newsletter. You'll be the
+        first to hear about new arrivals, deals, and promotions.</p>
+        <p style="color:#6b7280;font-size:13px;margin-top:16px;">
+          Didn't sign up for this? You can safely ignore this email.
+        </p>
+      </div>
+    `,
+  });
+}
