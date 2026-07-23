@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/mongodb";
 import Cart, { type ICartItem } from "@/models/Cart";
 import Product from "@/models/Product";
+import "@/models/Category";
 import mongoose from "mongoose";
 import { serializeProduct } from "@/lib/serializers";
 import type { AddToCartInput, UpdateCartItemInput } from "@/validations/cart";

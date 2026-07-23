@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/mongodb";
 import Wishlist from "@/models/Wishlist";
 import Product from "@/models/Product";
+import "@/models/Category";
 import mongoose, { Types } from "mongoose";
 import { serializeProduct } from "@/lib/serializers";
 import type { AddToWishlistInput } from "@/validations/wishlist";
@@ -27,7 +28,6 @@ async function findOrCreateWishlist(userId: string) {
   return wishlist;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function serializeWishlist(wishlist: any) {
   return wishlist.products
     .filter((product: any) => product)
