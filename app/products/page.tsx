@@ -18,6 +18,7 @@ interface ProductsPageProps {
     maxPrice?: string;
     price?: string; // legacy combined "min-max" format from the filter dropdown
     sort?: string;
+    new?: string;
     page?: string;
   }>;
 }
@@ -28,6 +29,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const search = params.search ?? "";
   const category = params.category ?? "";
   const sort = params.sort ?? "";
+  const isNewArrival = params.new === "true";
   const page = Number(params.page) || 1;
 
   // The filter dropdown sends price as "min-max" (e.g. "100-300")
@@ -47,6 +49,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         minPrice,
         maxPrice,
         sort: sort as "newest" | "price-asc" | "price-desc" | "rating" | undefined,
+        isNewArrival: isNewArrival || undefined,
         page,
         limit: 8,
       }),
@@ -68,9 +71,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         </div>
 
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">Shop Products</h1>
+          <h1 className="text-4xl font-bold text-gray-900">
+            {isNewArrival ? "New Arrivals" : "Shop Products"}
+          </h1>
           <p className="mt-2 text-gray-500">
-            Discover our latest collection of quality products.
+            {isNewArrival
+              ? "Check out the latest additions to our collection."
+              : "Discover our latest collection of quality products."}
           </p>
         </div>
 
