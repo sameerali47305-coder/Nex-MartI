@@ -38,13 +38,14 @@ export async function listProducts(query: ProductQueryInput) {
     ];
   }
 
-  // Filter by category (accepts the category's slug)
+  // Filter by category — accepts one or more comma-separated slugs
   if (query.category) {
-    const category = await Category.findOne({ slug: query.category });
-    if (!category) {
+    const slugs = query.category.split(",").map((s) => s.trim()).filter(Boolean);
+    const matchedCategories = await Category.find({ slug: { $in: slugs } });
+    if (matchedCategories.length === 0) {
       return { products: [], total: 0, page: 1, totalPages: 1 };
     }
-    filter.category = category._id;
+    filter.category = { $in: matchedCategories.map((c) => c._id) };
   }
 
   // Filter by price range
@@ -53,11 +54,6 @@ export async function listProducts(query: ProductQueryInput) {
     if (query.minPrice !== undefined) priceFilter.$gte = query.minPrice;
     if (query.maxPrice !== undefined) priceFilter.$lte = query.maxPrice;
     filter.price = priceFilter;
-  }
-
-  // Filter to only new-arrival products (used by the "New Arrivals" link)
-  if (query.isNewArrival) {
-    filter.isNewArrival = true;
   }
 
   // Sort
