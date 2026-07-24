@@ -30,6 +30,14 @@ const navLinks = [
 export default function Navbar() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const query = searchValue.trim();
+    router.push(query ? `/products?search=${encodeURIComponent(query)}` : "/products");
+    setIsMenuOpen(false);
+  }
   const { user, isAuthenticated, logout } = useAuth();
   const { itemCount } = useCart();
   const { items: wishlistItems } = useWishlist();
@@ -58,7 +66,7 @@ export default function Navbar() {
 
           {/* Search */}
           <div className="hidden flex-1 md:block">
-            <div className="relative">
+            <form onSubmit={handleSearchSubmit} className="relative">
 
               <Search
                 size={18}
@@ -67,20 +75,20 @@ export default function Navbar() {
 
               <input
                 type="text"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
                 placeholder="Search for products..."
                 className="w-full rounded-full border border-gray-300 py-3 pl-11 pr-5 outline-none transition focus:border-blue-600"
               />
 
-            </div>
+            </form>
           </div>
 
           {/* Right Side */}
           <div className="flex items-center gap-5">
 
-            {/* Desktop Wishlist Link with id="wishlist-icon" */}
             <Link
               href="/wishlist"
-              id="wishlist-icon"
               className="relative hidden transition hover:text-blue-600 md:inline-flex"
             >
               <Heart size={22} />
@@ -91,10 +99,8 @@ export default function Navbar() {
               )}
             </Link>
 
-            {/* Desktop Cart Link with id="cart-icon" */}
             <Link
               href="/cart"
-              id="cart-icon"
               className="relative hidden transition hover:text-blue-600 md:inline-flex"
             >
               <ShoppingCart size={22} />
@@ -176,17 +182,19 @@ export default function Navbar() {
 
             <div className="flex flex-col gap-1 py-4">
 
-              <div className="relative mb-3">
+              <form onSubmit={handleSearchSubmit} className="relative mb-3">
                 <Search
                   size={18}
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                 />
                 <input
                   type="text"
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
                   placeholder="Search for products..."
                   className="w-full rounded-full border border-gray-300 py-3 pl-11 pr-5 outline-none transition focus:border-blue-600"
                 />
-              </div>
+              </form>
 
               {navLinks.map((link) => (
                 <Link
@@ -200,9 +208,7 @@ export default function Navbar() {
               ))}
 
               <div className="mt-2 flex items-center gap-5 border-t px-3 pt-4">
-                {/* Mobile Wishlist Link with id="wishlist-icon" */}
                 <Link
-                  id="wishlist-icon"
                   href="/wishlist"
                   onClick={() => setIsMenuOpen(false)}
                   className="relative transition hover:text-blue-600"
@@ -214,10 +220,7 @@ export default function Navbar() {
                     </span>
                   )}
                 </Link>
-
-                {/* Mobile Cart Link with id="cart-icon" */}
                 <Link
-                  id="cart-icon"
                   href="/cart"
                   onClick={() => setIsMenuOpen(false)}
                   className="relative transition hover:text-blue-600"
