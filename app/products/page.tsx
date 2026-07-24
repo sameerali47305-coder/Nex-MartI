@@ -4,6 +4,7 @@ import Link from "next/link";
 import Container from "@/components/ui/Container";
 import ProductSearch from "@/components/product/ProductSearch";
 import ProductFilters from "@/components/product/ProductFilters";
+import ProductSort from "@/components/product/ProductSort";
 import ProductGrid from "@/components/product/ProductGrid";
 import Pagination from "@/components/product/Pagination";
 import { listProducts } from "@/services/product.service";
@@ -87,28 +88,38 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           </Suspense>
         </div>
 
-        <div className="mb-8">
+        <div className="flex flex-col gap-6 lg:flex-row">
+
           <Suspense fallback={null}>
             <ProductFilters
               category={category}
               price={params.price ?? ""}
-              sort={sort}
               categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
             />
           </Suspense>
-        </div>
 
-        <p className="mb-4 text-sm text-gray-500">
-          {total} {total === 1 ? "product" : "products"} found
-        </p>
+          <div className="flex-1">
 
-        {uiProducts.length > 0 ? (
-          <ProductGrid products={uiProducts} />
-        ) : (
-          <div className="rounded-lg border border-gray-200 bg-white py-16 text-center text-gray-500">
-            No products match your search or filters.
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <p className="text-sm text-gray-500">
+                {total} {total === 1 ? "product" : "products"} found
+              </p>
+              <Suspense fallback={null}>
+                <ProductSort sort={sort} />
+              </Suspense>
+            </div>
+
+            {uiProducts.length > 0 ? (
+              <ProductGrid products={uiProducts} />
+            ) : (
+              <div className="rounded-lg border border-gray-200 bg-white py-16 text-center text-gray-500">
+                No products match your search or filters.
+              </div>
+            )}
+
           </div>
-        )}
+
+        </div>
 
         <Pagination
           currentPage={currentPage}
