@@ -9,6 +9,8 @@ export interface IUser extends Document {
   isVerified: boolean;
   otpCode?: string;
   otpExpiry?: Date;
+  resetOtpCode?: string;
+  resetOtpExpiry?: Date;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -32,7 +34,7 @@ const UserSchema = new Schema<IUser>(
       type: String,
       required: [true, "Password is required"],
       minlength: 6,
-      select: false, // never return password by default in queries
+      select: false, 
     },
     role: {
       type: String,
@@ -51,11 +53,18 @@ const UserSchema = new Schema<IUser>(
       type: Date,
       select: false,
     },
+    resetOtpCode: {
+      type: String,
+      select: false,
+    },
+    resetOtpExpiry: {
+      type: Date,
+      select: false,
+    },
   },
   { timestamps: true }
 );
 
-// Hash the password before saving, only if it was modified
 UserSchema.pre("save", async function () {
   if (!this.isModified("password")) {
     return;
@@ -70,7 +79,6 @@ UserSchema.methods.comparePassword = async function (
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Reuse the model if it already exists (prevents "OverwriteModelError" in dev)
 const User = models.User || model<IUser>("User", UserSchema);
 
 export default User;

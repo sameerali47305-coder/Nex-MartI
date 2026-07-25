@@ -5,12 +5,16 @@ import {
   loginSchema,
   verifyOtpSchema,
   resendOtpSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from "@/validations/auth";
 import {
   registerUser,
   verifyOtp,
   resendOtp,
   loginUser,
+  forgotPassword,
+  resetPassword,
   AuthError,
 } from "@/services/auth.service";
 
@@ -107,6 +111,52 @@ export async function loginController(req: NextRequest) {
     );
   } catch (error) {
     return handleAuthError(error, "Login failed. Please try again.");
+  }
+}
+
+export async function forgotPasswordController(req: NextRequest) {
+  try {
+    const body = await req.json();
+
+    const parsed = forgotPasswordSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, message: parsed.error.issues[0].message },
+        { status: 400 }
+      );
+    }
+
+    await forgotPassword(parsed.data);
+
+    return NextResponse.json({
+      success: true,
+      message: "If an account exists with that email, a reset code has been sent.",
+    });
+  } catch (error) {
+    return handleAuthError(error, "Failed to send reset code.");
+  }
+}
+
+export async function resetPasswordController(req: NextRequest) {
+  try {
+    const body = await req.json();
+
+    const parsed = resetPasswordSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, message: parsed.error.issues[0].message },
+        { status: 400 }
+      );
+    }
+
+    await resetPassword(parsed.data);
+
+    return NextResponse.json({
+      success: true,
+      message: "Password reset successfully. You can now log in.",
+    });
+  } catch (error) {
+    return handleAuthError(error, "Failed to reset password.");
   }
 }
 

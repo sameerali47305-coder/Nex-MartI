@@ -3,12 +3,14 @@ import crypto from "crypto";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { generateToken } from "@/lib/jwt";
-import { sendOtpEmail } from "@/lib/sendEmail";
+import { sendOtpEmail, sendPasswordResetOtp } from "@/lib/sendEmail";
 import type {
   RegisterInput,
   LoginInput,
   VerifyOtpInput,
   ResendOtpInput,
+  ForgotPasswordInput,
+  ResetPasswordInput,
 } from "@/validations/auth";
 
 export class AuthError extends Error {
@@ -141,4 +143,54 @@ export async function loginUser({ email, password }: LoginInput) {
       role: user.role,
     },
   };
+}
+
+export async function forgotPassword({ email }: ForgotPasswordInput) {
+  await connectDB();
+
+  const user = await User.findOne({ email });
+
+  // Always return success even if the email doesn't exist — this prevents
+  // leaking which emails are registered (a common account-enumeration risk).
+  if (!user) {
+    return { email };
+  }
+
+  const otp = generateOtp();
+  user.resetOtpCode = otp;
+  user.resetOtpExpiry = new Date(Date.now() + OTP_TTL_MS);
+  await user.save();
+
+  try {
+    await sendPasswordResetOtp(user.email, user.name, otp);
+  } catch (emailError) {
+    console.error("Failed to send password reset email:", emailError);
+  }
+
+  return { email };
+}
+
+export async function resetPassword({ email, otp, newPassword }: ResetPasswordInput) {
+  await connectDB();
+
+  const user = await User.findOne({ email }).select("+resetOtpCode +resetOtpExpiry");
+
+  if (!user) {
+    throw new AuthError("No account found with this email", 404);
+  }
+
+  if (!user.resetOtpCode || !user.resetOtpExpiry || user.resetOtpExpiry < new Date()) {
+    throw new AuthError("This code has expired. Please request a new one.", 400);
+  }
+
+  if (user.resetOtpCode !== otp) {
+    throw new AuthError("Incorrect code. Please try again.", 400);
+  }
+
+  user.password = newPassword; // re-hashed automatically by the pre-save hook
+  user.resetOtpCode = undefined;
+  user.resetOtpExpiry = undefined;
+  await user.save();
+
+  return { email: user.email };
 }

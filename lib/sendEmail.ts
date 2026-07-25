@@ -14,6 +14,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+//send OTP
 export async function sendOtpEmail(to: string, name: string, otp: string) {
   await transporter.sendMail({
     from: `"NexMart" <${process.env.EMAIL_FROM}>`,
@@ -35,6 +36,7 @@ export async function sendOtpEmail(to: string, name: string, otp: string) {
     `,
   });
 }
+//contact message 
 export async function sendContactMessage(
   name: string,
   email: string,
@@ -68,6 +70,28 @@ export async function sendSubscriptionConfirmation(email: string) {
         first to hear about new arrivals, deals, and promotions.</p>
         <p style="color:#6b7280;font-size:13px;margin-top:16px;">
           Didn't sign up for this? You can safely ignore this email.
+        </p>
+      </div>
+    `,
+  });
+}
+//resend otp
+export async function sendPasswordResetOtp(to: string, name: string, otp: string) {
+  await transporter.sendMail({
+    from: `"NexMart" <${process.env.EMAIL_FROM}>`,
+    to,
+    subject: `${otp} is your NexMart password reset code`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
+        <h2 style="color:#2563eb;">Password reset requested</h2>
+        <p>Hi ${name}, enter this code to reset your password:</p>
+        <div style="margin:20px 0;padding:16px 24px;background:#eff6ff;border-radius:8px;text-align:center;">
+          <span style="font-size:32px;font-weight:700;letter-spacing:8px;color:#2563eb;">
+            ${otp}
+          </span>
+        </div>
+        <p style="color:#6b7280;font-size:13px;">
+          This code expires in 10 minutes. If you didn't request this, you can safely ignore this email — your password won't change.
         </p>
       </div>
     `,

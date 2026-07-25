@@ -50,6 +50,24 @@ export function resendOtpRequest(input: { email: string }) {
   });
 }
 
+export function forgotPasswordRequest(input: { email: string }) {
+  return apiRequest<{ email: string }>("/api/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function resetPasswordRequest(input: {
+  email: string;
+  otp: string;
+  newPassword: string;
+}) {
+  return apiRequest<{ email: string }>("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
 // NOTE: localStorage is used here because it's simple and fine for a
 // student/portfolio project. For real production, prefer an HTTP-only
 // cookie set by the server on login — localStorage is readable by any
