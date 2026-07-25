@@ -88,6 +88,7 @@ export default function Navbar() {
           <div className="flex items-center gap-5">
 
             <Link
+              id="wishlist-icon"
               href="/wishlist"
               className="relative hidden transition hover:text-blue-600 md:inline-flex"
             >
@@ -100,6 +101,7 @@ export default function Navbar() {
             </Link>
 
             <Link
+              id="cart-icon"
               href="/cart"
               className="relative hidden transition hover:text-blue-600 md:inline-flex"
             >

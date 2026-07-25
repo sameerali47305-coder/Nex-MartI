@@ -56,6 +56,10 @@ export async function listProducts(query: ProductQueryInput) {
     filter.price = priceFilter;
   }
 
+  if (query.isNewArrival) {
+    filter.isNewArrival = true;
+  }
+
   // Sort
   let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
   if (query.sort === "price-asc") sortOption = { price: 1 };
