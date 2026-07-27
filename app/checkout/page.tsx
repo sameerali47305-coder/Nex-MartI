@@ -84,28 +84,50 @@ export default function CheckoutPage() {
     }
 
     setIsSubmitting(true);
+    const token = getToken();
 
     try {
-      const token = getToken();
-      const res = await fetch("/api/orders", {
+      if (paymentMethod === "cod") {
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ shippingAddress: form, paymentMethod }),
+        });
+
+        const body = await res.json();
+        if (!res.ok) {
+          throw new Error(body.message || "Failed to place order");
+        }
+
+        toast.success("Order placed successfully!");
+        clearCart();
+        router.push("/order-confirmation");
+        return;
+      }
+
+      // Card payment — redirect to Stripe's hosted checkout page.
+      // The order itself is only created once Stripe confirms payment
+      // succeeded (that's Day 2's webhook, not this request).
+      const res = await fetch("/api/checkout/create-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ shippingAddress: form, paymentMethod }),
+        body: JSON.stringify({ shippingAddress: form }),
       });
 
       const body = await res.json();
       if (!res.ok) {
-        throw new Error(body.message || "Failed to place order");
+        throw new Error(body.message || "Failed to start checkout");
       }
 
-      toast.success("Order placed successfully!");
-      clearCart();
-      router.push("/order-confirmation");
+      window.location.href = body.data.url;
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to place order");
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
