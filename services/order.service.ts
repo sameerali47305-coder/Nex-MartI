@@ -101,3 +101,65 @@ export async function getOrderById(userId: string, orderId: string) {
 
   return serializeOrder(order);
 }
+
+export async function createOrderFromCheckoutSession(
+  userId: string,
+  shippingAddress: {
+    name: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    phone: string;
+  },
+  stripeSessionId: string
+) {
+  await connectDB();
+
+  // Idempotency: Stripe may deliver the same webhook event more than once.
+  // Without this check, a retried webhook would create a duplicate order.
+  const existing = await Order.findOne({ stripeSessionId });
+  if (existing) {
+    return serializeOrder(existing);
+  }
+
+  const cart = await Cart.findOne({ user: userId }).populate("items.product");
+  if (!cart || cart.items.length === 0) {
+    throw new ServiceError("Cart is empty, cannot create order", 400);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const validItems = cart.items.filter((item: any) => item.product);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const orderItems = validItems.map((item: any) => ({
+    product: item.product._id,
+    name: item.product.name,
+    image: item.product.image,
+    price: item.product.price,
+    quantity: item.quantity,
+  }));
+
+  const subtotal = orderItems.reduce(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (sum: number, item: any) => sum + item.price * item.quantity,
+    0
+  );
+  const shipping = SHIPPING_ESTIMATE;
+  const total = subtotal + shipping;
+
+  const order = await Order.create({
+    user: userId,
+    items: orderItems,
+    shippingAddress,
+    paymentMethod: "card",
+    paymentStatus: "paid",
+    stripeSessionId,
+    subtotal,
+    shipping,
+    total,
+  });
+
+  cart.items = [];
+  await cart.save();
+
+  return serializeOrder(order);
+}
