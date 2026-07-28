@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { createOrderSchema } from "@/validations/order";
-import { createOrder, listOrders, getOrderById, ServiceError } from "@/services/order.service";
+import { createOrder, listOrders, getOrderById, getOrderBySessionId, ServiceError } from "@/services/order.service";
 import { withAuth } from "@/middleware/auth";
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -68,3 +68,30 @@ function handleServiceError(error: unknown, fallbackMessage: string) {
   console.error(error);
   return NextResponse.json({ success: false, message: fallbackMessage }, { status: 500 });
 }
+type SessionRouteParams = { params: Promise<{ sessionId: string }> };
+
+export const getOrderBySessionController = withAuth<[SessionRouteParams]>(
+  async (_req: NextRequest, user, { params }) => {
+    try {
+      const { sessionId } = await params;
+      const order = await getOrderBySessionId(user.userId, sessionId);
+      return NextResponse.json({
+        success: true,
+        message: "Order fetched",
+        data: { order },
+      });
+    } catch (error) {
+      if (error instanceof ServiceError) {
+        return NextResponse.json(
+          { success: false, message: error.message },
+          { status: error.status }
+        );
+      }
+      console.error(error);
+      return NextResponse.json(
+        { success: false, message: "Failed to fetch order" },
+        { status: 500 }
+      );
+    }
+  }
+);

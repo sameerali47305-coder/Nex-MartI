@@ -163,3 +163,14 @@ export async function createOrderFromCheckoutSession(
 
   return serializeOrder(order);
 }
+
+export async function getOrderBySessionId(userId: string, stripeSessionId: string) {
+  await connectDB();
+
+  const order = await Order.findOne({ stripeSessionId, user: userId });
+  if (!order) {
+    throw new ServiceError("Order not found", 404);
+  }
+
+  return serializeOrder(order);
+}
