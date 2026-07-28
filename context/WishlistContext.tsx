@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   ReactNode,
 } from "react";
@@ -21,9 +22,8 @@ interface WishlistContextValue {
   removeFromWishlist: (productId: string) => void;
 }
 
-const WishlistContext = createContext<WishlistContextValue | undefined>(
-  undefined
-);
+const WishlistContext = createContext<WishlistContextValue | undefined>(undefined);
+const GUEST_WISHLIST_KEY = "nexmart_guest_wishlist";
 
 interface WishlistApiResponse {
   success: boolean;
@@ -54,73 +54,119 @@ async function wishlistFetch(
   return body;
 }
 
+function readGuestWishlist(): UIProduct[] {
+  try {
+    const stored = localStorage.getItem(GUEST_WISHLIST_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeGuestWishlist(items: UIProduct[]) {
+  try {
+    localStorage.setItem(GUEST_WISHLIST_KEY, JSON.stringify(items));
+  } catch {
+    // ignore storage errors (e.g. private browsing)
+  }
+}
+
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
   const [items, setItems] = useState<UIProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const wasAuthenticated = useRef(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      setItems([]);
-      return;
-    }
-
     let isCancelled = false;
-    setIsLoading(true);
 
-    wishlistFetch("")
-      .then((body) => {
+    async function sync() {
+      if (!isAuthenticated) {
+        setItems(readGuestWishlist());
+        wasAuthenticated.current = false;
+        return;
+      }
+
+      // Just logged in: merge any guest-wishlisted products into the
+      // account's server wishlist, then clear the local copy.
+      const justLoggedIn = !wasAuthenticated.current;
+      wasAuthenticated.current = true;
+
+      setIsLoading(true);
+      try {
+        if (justLoggedIn) {
+          const guestItems = readGuestWishlist();
+          for (const product of guestItems) {
+            try {
+              await wishlistFetch("", {
+                method: "POST",
+                body: JSON.stringify({ productId: product.id }),
+              });
+            } catch {
+              // Skip items that fail to merge — don't block the rest.
+            }
+          }
+          writeGuestWishlist([]);
+        }
+
+        const body = await wishlistFetch("");
         if (!isCancelled && body.data) {
           setItems(body.data.wishlist);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Failed to load wishlist:", error);
-      })
-      .finally(() => {
+      } finally {
         if (!isCancelled) setIsLoading(false);
-      });
+      }
+    }
+
+    sync();
 
     return () => {
       isCancelled = true;
     };
   }, [isAuthenticated]);
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      writeGuestWishlist(items);
+    }
+  }, [items, isAuthenticated]);
+
   const isWishlisted = (productId: string) => {
     return items.some((item) => item.id === productId);
   };
 
   const toggleWishlist = (product: UIProduct) => {
-    if (!isAuthenticated) {
-      toast.error("Please login to use your wishlist");
-      return;
-    }
-
     const alreadyWishlisted = isWishlisted(product.id);
 
     if (alreadyWishlisted) {
       setItems((prev) => prev.filter((item) => item.id !== product.id));
       toast.success(`${product.name} removed from wishlist`);
 
-      wishlistFetch(`/${product.id}`, { method: "DELETE" }).catch((error) => {
-        console.error("Failed to remove from wishlist:", error);
-      });
+      if (isAuthenticated) {
+        wishlistFetch(`/${product.id}`, { method: "DELETE" }).catch((error) => {
+          console.error("Failed to remove from wishlist:", error);
+        });
+      }
     } else {
       setItems((prev) => [...prev, product]);
       toast.success(`${product.name} added to wishlist`);
 
-      wishlistFetch("", {
-        method: "POST",
-        body: JSON.stringify({ productId: product.id }),
-      })
-        .then((body) => {
-          if (body.data) {
-            setItems(body.data.wishlist);
-          }
+      if (isAuthenticated) {
+        wishlistFetch("", {
+          method: "POST",
+          body: JSON.stringify({ productId: product.id }),
         })
-        .catch((error) => {
-          console.error("Failed to add to wishlist:", error);
-        });
+          .then((body) => {
+            if (body.data) {
+              setItems(body.data.wishlist);
+            }
+          })
+          .catch((error) => {
+            console.error("Failed to add to wishlist:", error);
+          });
+      }
     }
   };
 
@@ -132,9 +178,11 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       toast.success(`${item.name} removed from wishlist`);
     }
 
-    wishlistFetch(`/${productId}`, { method: "DELETE" }).catch((error) => {
-      console.error("Failed to remove from wishlist:", error);
-    });
+    if (isAuthenticated) {
+      wishlistFetch(`/${productId}`, { method: "DELETE" }).catch((error) => {
+        console.error("Failed to remove from wishlist:", error);
+      });
+    }
   };
 
   return (

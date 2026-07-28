@@ -44,7 +44,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <div className="group flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       {/* Image wrapper with attached ref */}
       <div
         ref={imageRef}
@@ -89,11 +89,11 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* UIProduct Info */}
-      <div className="space-y-3 p-5">
+      <div className="flex flex-1 flex-col space-y-3 p-5">
         <p className="text-sm text-blue-600">{product.category}</p>
 
         <Link href={`/products/${product.id}`}>
-          <h3 className="line-clamp-2 text-lg font-semibold transition hover:text-blue-600">
+          <h3 className="line-clamp-2 min-h-[3.5rem] text-lg font-semibold leading-tight transition hover:text-blue-600">
             {product.name}
           </h3>
         </Link>
@@ -130,7 +130,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <button
           onClick={handleAddToCart}
           disabled={product.stock === 0}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+          className="mt-auto flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
         >
           <ShoppingCart size={18} />
           {product.stock === 0 ? "Out of Stock" : "Add to Cart"}

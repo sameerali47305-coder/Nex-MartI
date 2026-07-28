@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   ReactNode,
 } from "react";
@@ -35,6 +36,7 @@ interface CartContextValue {
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
+const GUEST_CART_KEY = "nexmart_guest_cart";
 
 interface CartApiResponse {
   success: boolean;
@@ -62,45 +64,117 @@ async function cartFetch(path: string, options: RequestInit = {}): Promise<CartA
   return body;
 }
 
+function readGuestCart(): CartItem[] {
+  try {
+    const stored = localStorage.getItem(GUEST_CART_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeGuestCart(items: CartItem[]) {
+  try {
+    localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
+  } catch {
+    // ignore storage errors (e.g. private browsing)
+  }
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const wasAuthenticated = useRef(false);
 
-  // Whenever login state changes, sync with the server: logged in -> fetch
-  // the user's saved cart; logged out -> clear it locally (nothing to show
-  // for a guest, and we don't want the previous user's cart lingering).
   useEffect(() => {
-    if (!isAuthenticated) {
-      setItems([]);
-      return;
-    }
-
     let isCancelled = false;
-    setIsLoading(true);
 
-    cartFetch("")
-      .then((body) => {
+    async function sync() {
+      if (!isAuthenticated) {
+        // Guest / logged-out: just load whatever's saved locally.
+        setItems(readGuestCart());
+        wasAuthenticated.current = false;
+        return;
+      }
+
+      // Just logged in: if there's a guest cart sitting in localStorage,
+      // merge each item into the account's server cart, then clear it —
+      // the add-to-cart API already handles summing quantities and
+      // capping at available stock.
+      const justLoggedIn = !wasAuthenticated.current;
+      wasAuthenticated.current = true;
+
+      setIsLoading(true);
+      try {
+        if (justLoggedIn) {
+          const guestItems = readGuestCart();
+          for (const item of guestItems) {
+            try {
+              await cartFetch("", {
+                method: "POST",
+                body: JSON.stringify({ productId: item.id, quantity: item.quantity }),
+              });
+            } catch {
+              // Skip items that fail to merge (e.g. now out of stock) —
+              // don't let one bad item block the rest.
+            }
+          }
+          writeGuestCart([]);
+        }
+
+        const body = await cartFetch("");
         if (!isCancelled && body.data) {
           setItems(body.data.cart.items);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Failed to load cart:", error);
-      })
-      .finally(() => {
+      } finally {
         if (!isCancelled) setIsLoading(false);
-      });
+      }
+    }
+
+    sync();
 
     return () => {
       isCancelled = true;
     };
   }, [isAuthenticated]);
 
+  // Persist guest cart changes to localStorage as they happen.
+  useEffect(() => {
+    if (!isAuthenticated) {
+      writeGuestCart(items);
+    }
+  }, [items, isAuthenticated]);
+
   const addToCart = async (product: UIProduct, quantity: number = 1): Promise<boolean> => {
     if (!isAuthenticated) {
-      toast.error("Please login to add items to your cart");
-      return false;
+      setItems((prev) => {
+        const existing = prev.find((item) => item.id === product.id);
+        if (existing) {
+          const capped = product.stock
+            ? Math.min(existing.quantity + quantity, product.stock)
+            : existing.quantity + quantity;
+          return prev.map((item) =>
+            item.id === product.id ? { ...item, quantity: capped } : item
+          );
+        }
+        return [
+          ...prev,
+          {
+            id: product.id,
+            name: product.name,
+            image: product.image,
+            price: product.price,
+            oldPrice: product.oldPrice,
+            quantity: product.stock ? Math.min(quantity, product.stock) : quantity,
+            stock: product.stock,
+          },
+        ];
+      });
+      toast.success(`${product.name} added to cart`);
+      return true;
     }
 
     try {
@@ -124,16 +198,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const removeFromCart = (productId: string) => {
     const item = items.find((i) => i.id === productId);
 
-    // Optimistic update — remove locally right away, sync with the server
-    // in the background so the UI feels instant.
     setItems((prev) => prev.filter((i) => i.id !== productId));
     if (item) {
       toast.success(`${item.name} removed from cart`);
     }
 
-    cartFetch(`/${productId}`, { method: "DELETE" }).catch((error) => {
-      console.error("Failed to remove item from cart:", error);
-    });
+    if (isAuthenticated) {
+      cartFetch(`/${productId}`, { method: "DELETE" }).catch((error) => {
+        console.error("Failed to remove item from cart:", error);
+      });
+    }
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -142,8 +216,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Optimistic update, then confirm/correct against the server response
-    // (e.g. if it had to cap the quantity at available stock).
     setItems((prev) =>
       prev.map((item) =>
         item.id === productId
@@ -152,27 +224,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
       )
     );
 
-    cartFetch(`/${productId}`, {
-      method: "PUT",
-      body: JSON.stringify({ quantity }),
-    })
-      .then((body) => {
-        if (body.data) {
-          setItems(body.data.cart.items);
-        }
+    if (isAuthenticated) {
+      cartFetch(`/${productId}`, {
+        method: "PUT",
+        body: JSON.stringify({ quantity }),
       })
-      .catch((error) => {
-        console.error("Failed to update cart quantity:", error);
-      });
+        .then((body) => {
+          if (body.data) {
+            setItems(body.data.cart.items);
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to update cart quantity:", error);
+        });
+    }
   };
 
   const clearCart = () => {
-    // NOTE: this only clears local state for now — there's no "clear whole
-    // cart" endpoint yet. Once Order APIs are added, placing an order
-    // should also clear the server-side cart (either a dedicated
-    // DELETE /api/cart route, or the order service clearing it after the
-    // order is created), otherwise items will reappear on next login.
     setItems([]);
+    if (!isAuthenticated) {
+      writeGuestCart([]);
+    }
   };
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -180,16 +252,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{
-        items,
-        isLoading,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        subtotal,
-        itemCount,
-      }}
+      value={{ items, isLoading, addToCart, removeFromCart, updateQuantity, clearCart, subtotal, itemCount }}
     >
       {children}
     </CartContext.Provider>
