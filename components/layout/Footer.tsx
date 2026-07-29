@@ -22,7 +22,7 @@ const helpLinks = [
   { href: "/contact", label: "Contact Us" },
   { href: "/faq", label: "FAQs" },
   { href: "/shipping", label: "Shipping & Returns" },
-  { href: "/track-order", label: "Track Order" },
+  { href: "/orders", label: "Track Order" },
 ];
 
 const companyLinks = [

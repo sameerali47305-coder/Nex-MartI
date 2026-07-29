@@ -3,6 +3,10 @@ import type Stripe from "stripe";
 
 import { stripe } from "@/lib/stripe";
 import { createOrderFromCheckoutSession } from "@/services/order.service";
+import { connectDB } from "@/lib/mongodb";
+import User from "@/models/User";
+import { generateInvoicePdf } from "@/lib/generateInvoicePdf";
+import { sendPaymentSuccessEmail } from "@/lib/sendEmail";
 
 export async function POST(req: NextRequest) {
   const signature = req.headers.get("stripe-signature");
@@ -31,7 +35,20 @@ export async function POST(req: NextRequest) {
     if (userId && shippingAddressRaw) {
       try {
         const shippingAddress = JSON.parse(shippingAddressRaw);
-        await createOrderFromCheckoutSession(userId, shippingAddress, session.id);
+        const order = await createOrderFromCheckoutSession(userId, shippingAddress, session.id);
+
+        // Email failures shouldn't affect the already-created order —
+        // isolated in its own try/catch.
+        try {
+          await connectDB();
+          const user = await User.findById(userId);
+          if (user) {
+            const pdfBuffer = await generateInvoicePdf(order);
+            await sendPaymentSuccessEmail(user.email, user.name, order.id, order.total, pdfBuffer);
+          }
+        } catch (emailError) {
+          console.error("Failed to send payment confirmation email:", emailError);
+        }
       } catch (error) {
         // Logged for manual review — still return 200 below so Stripe
         // doesn't endlessly retry a request that will keep failing the

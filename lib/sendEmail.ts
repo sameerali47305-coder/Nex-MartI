@@ -97,3 +97,30 @@ export async function sendPasswordResetOtp(to: string, name: string, otp: string
     `,
   });
 }
+
+export async function sendPaymentSuccessEmail(
+  to: string,
+  name: string,
+  orderId: string,
+  total: number,
+  pdfBuffer: Buffer
+) {
+  await transporter.sendMail({
+    from: `"NexMart" <${process.env.EMAIL_FROM}>`,
+    to,
+    subject: `Payment Successful — Order #${orderId.slice(-8).toUpperCase()}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
+        <h2 style="color:#2563eb;">Thank you, ${name}!</h2>
+        <p>Your payment of $${total.toFixed(2)} was successful and your order has been confirmed.</p>
+        <p>Your invoice is attached to this email.</p>
+        <p style="margin-top:16px;color:#6b7280;font-size:13px;">
+          Order ID: ${orderId}
+        </p>
+      </div>
+    `,
+    attachments: [
+      { filename: `invoice-${orderId}.pdf`, content: pdfBuffer },
+    ],
+  });
+}
