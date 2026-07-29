@@ -28,23 +28,23 @@ export default function Hero() {
           {/* Left Content */}
           <div className="relative z-10">
 
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-orange-200 ring-1 ring-white/20 backdrop-blur">
+            <div className="mb-5 inline-flex animate-in fade-in slide-in-from-top-4 fill-mode-both items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-orange-200 ring-1 ring-white/20 backdrop-blur duration-700">
               <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
               New Collection 2026
             </div>
 
-            <h1 className="text-5xl font-extrabold leading-[1.1] tracking-tight lg:text-6xl">
+            <h1 className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both text-5xl font-extrabold leading-[1.1] tracking-tight duration-700 delay-150 lg:text-6xl">
               Shop Smarter,
               <br />
               <span className="text-orange-300">Live Better</span>
             </h1>
 
-            <p className="mt-6 max-w-lg text-lg text-blue-100">
+            <p className="mt-6 max-w-lg animate-in fade-in slide-in-from-bottom-6 fill-mode-both text-lg text-blue-100 duration-700 delay-300">
               Discover premium products at amazing prices. Fast delivery,
               secure payments, and quality you can trust.
             </p>
 
-            <div className="mt-9 flex flex-wrap items-center gap-4">
+            <div className="mt-9 flex animate-in fade-in slide-in-from-bottom-6 fill-mode-both flex-wrap items-center gap-4 duration-700 delay-500">
 
               <Link
                 href="/products"
@@ -64,7 +64,7 @@ export default function Hero() {
             </div>
 
             {/* Trust stats */}
-            <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-white/10 pt-6 text-sm text-blue-100">
+            <div className="mt-12 flex animate-in fade-in fill-mode-both flex-wrap items-center gap-x-8 gap-y-4 border-t border-white/10 pt-6 text-sm text-blue-100 duration-700 delay-700">
 
               <div className="flex items-center gap-2">
                 <Truck size={18} className="text-orange-300" />
@@ -91,7 +91,7 @@ export default function Hero() {
             <div className="relative h-[420px] w-[420px]">
 
               {/* Main floating product card */}
-              <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 -rotate-3 rounded-3xl bg-white p-4 shadow-2xl">
+              <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 -rotate-3 animate-in fade-in zoom-in-90 fill-mode-both rounded-3xl bg-white p-4 shadow-2xl duration-700 delay-200">
                 <div className="relative h-full w-full overflow-hidden rounded-2xl">
                   <Image
                     src="/products/headphone.jpeg"
@@ -104,7 +104,7 @@ export default function Hero() {
               </div>
 
               {/* Secondary offset product card */}
-              <div className="absolute -right-4 bottom-8 h-36 w-36 rotate-6 rounded-2xl bg-white p-2.5 shadow-xl">
+              <div className="absolute -right-4 bottom-8 h-36 w-36 rotate-6 animate-in fade-in slide-in-from-bottom-10 fill-mode-both rounded-2xl bg-white p-2.5 shadow-xl duration-700 delay-500">
                 <div className="relative h-full w-full overflow-hidden rounded-xl">
                   <Image
                     src="/products/watch.jpeg"
@@ -116,16 +116,16 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Discount badge */}
-              <div className="absolute -left-6 top-6 flex flex-col items-center justify-center rounded-2xl bg-orange-500 px-5 py-4 text-center shadow-xl">
+              {/* Discount badge — drops in from above */}
+              <div className="absolute -left-6 top-6 flex animate-in fade-in slide-in-from-top-16 fill-mode-both flex-col items-center justify-center rounded-2xl bg-orange-500 px-5 py-4 text-center shadow-xl duration-700 delay-700 ease-out">
                 <span className="text-2xl font-extrabold leading-none text-white">50%</span>
                 <span className="text-[11px] font-medium uppercase tracking-wide text-white">
                   Off Today
                 </span>
               </div>
 
-              {/* Rating card */}
-              <div className="absolute -bottom-3 left-4 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-gray-900 shadow-xl">
+              {/* Rating card — drops in from above, last */}
+              <div className="absolute -bottom-3 left-4 flex animate-in fade-in slide-in-from-top-16 fill-mode-both items-center gap-3 rounded-2xl bg-white px-4 py-3 text-gray-900 shadow-xl duration-700 delay-[900ms] ease-out">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-100">
                   <Star size={18} className="fill-orange-400 text-orange-400" />
                 </div>
