@@ -1,7 +1,10 @@
 import { connectDB } from "@/lib/mongodb";
 import Order from "@/models/Order";
 import Cart from "@/models/Cart";
+import User from "@/models/User";
 import type { CreateOrderInput } from "@/validations/order";
+import { generateInvoicePdf } from "@/lib/generateInvoicePdf";
+import { sendOrderPlacedEmail } from "@/lib/sendEmail";
 
 export class ServiceError extends Error {
   status: number;
@@ -83,7 +86,20 @@ export async function createOrder(userId: string, input: CreateOrderInput) {
   cart.items = [];
   await cart.save();
 
-  return serializeOrder(order);
+  const serialized = serializeOrder(order);
+
+  // Email failures shouldn't block order placement — isolated try/catch.
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      const pdfBuffer = await generateInvoicePdf(serialized);
+      await sendOrderPlacedEmail(user.email, user.name, serialized.id, serialized.total, pdfBuffer);
+    }
+  } catch (emailError) {
+    console.error("Failed to send order confirmation email:", emailError);
+  }
+
+  return serialized;
 }
 
 export async function listOrders(userId: string) {

@@ -124,3 +124,30 @@ export async function sendPaymentSuccessEmail(
     ],
   });
 }
+
+export async function sendOrderPlacedEmail(
+  to: string,
+  name: string,
+  orderId: string,
+  total: number,
+  pdfBuffer: Buffer
+) {
+  await transporter.sendMail({
+    from: `"NexMart" <${process.env.EMAIL_FROM}>`,
+    to,
+    subject: `Order Confirmed — Order #${orderId.slice(-8).toUpperCase()}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
+        <h2 style="color:#2563eb;">Thank you, ${name}!</h2>
+        <p>Your order of $${total.toFixed(2)} has been placed and will be paid via Cash on Delivery.</p>
+        <p>Your invoice is attached to this email.</p>
+        <p style="margin-top:16px;color:#6b7280;font-size:13px;">
+          Order ID: ${orderId}
+        </p>
+      </div>
+    `,
+    attachments: [
+      { filename: `invoice-${orderId}.pdf`, content: pdfBuffer },
+    ],
+  });
+}

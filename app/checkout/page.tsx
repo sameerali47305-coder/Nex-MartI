@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useRef, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { CreditCard, Truck } from "lucide-react";
@@ -34,9 +34,14 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<Partial<ShippingForm>>({});
   const [paymentMethod, setPaymentMethod] = useState<"card" | "cod">("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const orderPlacedRef = useRef(false);
 
   useEffect(() => {
-    if (items.length === 0) {
+    // Skip this redirect if we just placed an order — clearCart() empties
+    // the cart while we're still on this page, which would otherwise
+    // trigger this same guard and send the user to /cart instead of
+    // their order confirmation.
+    if (items.length === 0 && !orderPlacedRef.current) {
       router.replace("/cart");
     }
   }, [items, router]);
@@ -103,8 +108,9 @@ export default function CheckoutPage() {
         }
 
         toast.success("Order placed successfully!");
+        orderPlacedRef.current = true;
         clearCart();
-        router.push("/order-confirmation");
+        router.push(`/orders/${body.data.order.id}`);
         return;
       }
 
