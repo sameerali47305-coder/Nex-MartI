@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -12,6 +12,8 @@ import {
   LogOut,
   Menu,
   X,
+  Package,
+  ChevronDown,
 } from "lucide-react";
 
 import Container from "@/components/ui/Container";
@@ -30,7 +32,10 @@ const navLinks = [
 export default function Navbar() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +43,7 @@ export default function Navbar() {
     router.push(query ? `/products?search=${encodeURIComponent(query)}` : "/products");
     setIsMenuOpen(false);
   }
+
   const { user, isAuthenticated, logout } = useAuth();
   const { itemCount } = useCart();
   const { items: wishlistItems } = useWishlist();
@@ -48,6 +54,22 @@ export default function Navbar() {
     setIsMenuOpen(false);
     router.push("/");
   };
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -115,19 +137,73 @@ export default function Navbar() {
 
             {/* Auth area (desktop) */}
             {isAuthenticated ? (
-              <div className="hidden items-center gap-3 md:flex">
-                <span className="flex items-center gap-1.5 text-sm font-medium text-gray-900">
-                  <User size={18} className="text-blue-600" />
-                  {user?.name}
-                </span>
+              <div
+                className="relative hidden md:block"
+                ref={dropdownRef}
+              >
                 <button
-                  onClick={handleLogout}
-                  aria-label="Logout"
-                  className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:border-red-500 hover:text-red-500"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-2 rounded-lg px-2 py-2 transition hover:bg-gray-100"
                 >
-                  <LogOut size={16} />
-                  Logout
+                  <User size={18} className="text-blue-600" />
+
+                  <span className="text-sm font-medium">
+                    {user?.name}
+                  </span>
+
+                  <ChevronDown
+                    size={16}
+                    className={`transition ${
+                      isDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
+
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-3 w-56 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+
+                    <Link
+                      href="/orders"
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 hover:text-blue-600"
+                    >
+                      <Package size={18} />
+                      My Orders
+                    </Link>
+
+                    <Link
+                      href="/wishlist"
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 hover:text-blue-600"
+                    >
+                      <Heart size={18} />
+                      Wishlist
+                    </Link>
+
+                    <Link
+                      href="/cart"
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 hover:text-blue-600"
+                    >
+                      <ShoppingCart size={18} />
+                      Cart
+                    </Link>
+
+                    <hr />
+
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        handleLogout();
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-red-50 hover:text-red-600"
+                    >
+                      <LogOut size={18} />
+                      Logout
+                    </button>
+
+                  </div>
+                )}
               </div>
             ) : (
               <Link
