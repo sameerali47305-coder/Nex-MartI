@@ -114,12 +114,20 @@ export default function CheckoutSuccessClient() {
             </div>
           </div>
 
-          <Link
-            href="/products"
-            className="mt-2 rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-700"
-          >
-            Continue Shopping
-          </Link>
+          <div className="mt-2 flex gap-3">
+            <Link
+              href={`/orders/${order.id}`}
+              className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-700"
+            >
+              View Order
+            </Link>
+            <Link
+              href="/products"
+              className="rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              Continue Shopping
+            </Link>
+          </div>
         </>
       )}
 
@@ -133,12 +141,20 @@ export default function CheckoutSuccessClient() {
             Your payment went through, but we&apos;re still finalizing your order details.
             Check your order history in a moment, or contact us if it doesn&apos;t appear.
           </p>
-          <Link
-            href="/products"
-            className="mt-2 rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-700"
-          >
-            Continue Shopping
-          </Link>
+          <div className="mt-2 flex gap-3">
+            <Link
+              href="/orders"
+              className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-700"
+            >
+              View Order History
+            </Link>
+            <Link
+              href="/products"
+              className="rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              Continue Shopping
+            </Link>
+          </div>
         </>
       )}
 

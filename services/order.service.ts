@@ -30,6 +30,8 @@ function serializeOrder(order: any) {
     shipping: order.shipping,
     total: order.total,
     status: order.status,
+    paymentStatus: order.paymentStatus,
+    stripeSessionId: order.stripeSessionId ?? null,
     createdAt: order.createdAt,
   };
 }
