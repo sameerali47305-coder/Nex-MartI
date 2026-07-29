@@ -295,10 +295,7 @@ export default function CheckoutPage() {
                   <span className="font-medium text-gray-900">Cash on Delivery</span>
                 </label>
               </div>
-
-              <p className="mt-4 text-sm text-gray-500">
-                Payment integration is coming soon — no charges will be made yet.
-              </p>
+              
             </div>
           </div>
 
