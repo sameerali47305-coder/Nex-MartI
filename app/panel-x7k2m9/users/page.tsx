@@ -2,7 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, Trash2, PencilLine, Users, Search, Check } from "lucide-react";
+import {
+  Loader2,
+  Trash2,
+  PencilLine,
+  Users,
+  Search,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 import {
   fetchUsers,
@@ -18,6 +27,9 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "customer" | "admin">("all");
 
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 5;
+
   useEffect(() => {
     loadUsers();
   }, []);
@@ -28,7 +40,9 @@ export default function AdminUsersPage() {
       .then((res) => {
         if (res.data) setUsers(res.data.users);
       })
-      .catch((error) => toast.error(error instanceof Error ? error.message : "Failed to load users"))
+      .catch((error) =>
+        toast.error(error instanceof Error ? error.message : "Failed to load users")
+      )
       .finally(() => setIsLoading(false));
   }
 
@@ -43,6 +57,17 @@ export default function AdminUsersPage() {
       return matchesRole && matchesSearch;
     });
   }, [users, search, roleFilter]);
+
+  // Reset to page 1 whenever search query or role filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [search, roleFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PER_PAGE));
+  const visibleUsers = filteredUsers.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  const startCount = filteredUsers.length === 0 ? 0 : (page - 1) * PER_PAGE + 1;
+  const endCount = Math.min(page * PER_PAGE, filteredUsers.length);
 
   async function handleRoleToggle(user: AdminUser) {
     const nextRole = user.role === "admin" ? "customer" : "admin";
@@ -92,7 +117,6 @@ export default function AdminUsersPage() {
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-
         <div className="flex flex-col gap-3 border-b border-gray-100 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-1 flex-col gap-3 sm:flex-row">
             <div className="relative sm:w-72">
@@ -116,7 +140,7 @@ export default function AdminUsersPage() {
             </select>
           </div>
           <p className="text-sm text-gray-500">
-            Showing {filteredUsers.length === 0 ? 0 : 1}-{filteredUsers.length} of {users.length} users
+            Showing {startCount}-{endCount} of {filteredUsers.length} users
           </p>
         </div>
 
@@ -133,7 +157,7 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.map((user) => (
+              {visibleUsers.map((user) => (
                 <tr key={user.id} className="border-b border-gray-50">
                   <td className="px-5 py-3">
                     <p className="font-medium text-gray-900">{user.name}</p>
@@ -187,11 +211,34 @@ export default function AdminUsersPage() {
             </tbody>
           </table>
 
+          {filteredUsers.length > PER_PAGE && (
+            <div className="flex items-center justify-center gap-3 border-t border-gray-100 p-4">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:opacity-40"
+              >
+                <ChevronLeft size={16} />
+                Prev
+              </button>
+              <span className="text-sm text-gray-500">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:opacity-40"
+              >
+                Next
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
+
           {filteredUsers.length === 0 && (
             <p className="p-5 text-sm text-gray-500">No users match your search.</p>
           )}
         </div>
-
       </div>
     </div>
   );

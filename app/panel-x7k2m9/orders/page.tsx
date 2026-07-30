@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 
 import {
   fetchAllOrders,
@@ -18,8 +18,14 @@ export default function AdminOrdersPage() {
   const [filter, setFilter] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 8;
+  const totalPages = Math.max(1, Math.ceil(orders.length / PER_PAGE));
+  const visibleOrders = orders.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
   useEffect(() => {
     loadOrders();
+    setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
@@ -29,7 +35,9 @@ export default function AdminOrdersPage() {
       .then((res) => {
         if (res.data) setOrders(res.data.orders);
       })
-      .catch((error) => toast.error(error instanceof Error ? error.message : "Failed to load orders"))
+      .catch((error) =>
+        toast.error(error instanceof Error ? error.message : "Failed to load orders")
+      )
       .finally(() => setIsLoading(false));
   }
 
@@ -38,7 +46,9 @@ export default function AdminOrdersPage() {
     try {
       await updateAdminOrderStatus(order.id, status);
       toast.success(`Order updated to ${status}`);
-      setOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, status } : o)));
+      setOrders((prev) =>
+        prev.map((o) => (o.id === order.id ? { ...o, status } : o))
+      );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to update order");
     } finally {
@@ -83,7 +93,7 @@ export default function AdminOrdersPage() {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
+              {visibleOrders.map((order) => (
                 <tr key={order.id} className="border-b border-gray-50">
                   <td className="px-5 py-3">
                     <p className="font-medium text-gray-900">{order.customerName}</p>
@@ -125,6 +135,30 @@ export default function AdminOrdersPage() {
               ))}
             </tbody>
           </table>
+
+          {orders.length > PER_PAGE && (
+            <div className="flex items-center justify-center gap-3 border-t border-gray-100 p-4">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:opacity-40"
+              >
+                <ChevronLeft size={16} />
+                Prev
+              </button>
+              <span className="text-sm text-gray-500">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:opacity-40"
+              >
+                Next
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
 
           {orders.length === 0 && (
             <p className="p-5 text-sm text-gray-500">No orders found.</p>
