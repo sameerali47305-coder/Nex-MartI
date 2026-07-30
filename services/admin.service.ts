@@ -2,7 +2,7 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
-import type { UpdateUserRoleInput } from "@/validations/admin";
+import type { UpdateUserInput } from "@/validations/admin";
 
 export class ServiceError extends Error {
   status: number;
@@ -31,22 +31,34 @@ export async function listUsers() {
   }));
 }
 
-export async function updateUserRole(
+export async function updateUser(
   adminUserId: string,
   targetUserId: string,
-  input: UpdateUserRoleInput
+  input: UpdateUserInput
 ) {
   await connectDB();
 
-  if (adminUserId === targetUserId) {
+  if (input.role !== undefined && adminUserId === targetUserId) {
     throw new ServiceError("You cannot change your own role", 400);
   }
 
-  const user = await User.findByIdAndUpdate(
-    targetUserId,
-    { role: input.role },
-    { new: true, runValidators: true }
-  );
+  const update: Partial<{ name: string; email: string; role: "customer" | "admin" }> = {};
+  if (input.name !== undefined) update.name = input.name;
+  if (input.email !== undefined) update.email = input.email;
+  if (input.role !== undefined) update.role = input.role;
+
+  let user;
+  try {
+    user = await User.findByIdAndUpdate(targetUserId, update, {
+      new: true,
+      runValidators: true,
+    });
+  } catch (error: unknown) {
+    if (typeof error === "object" && error !== null && "code" in error && (error as { code?: number }).code === 11000) {
+      throw new ServiceError("That email is already in use", 409);
+    }
+    throw error;
+  }
 
   if (!user) {
     throw new ServiceError("User not found", 404);

@@ -65,6 +65,12 @@ export interface AdminOrder {
   createdAt: string;
 }
 
+export interface UpdateUserInput {
+  name?: string;
+  email?: string;
+  role?: "customer" | "admin";
+}
+
 export function fetchDashboardStats() {
   return adminRequest<DashboardStats>("/api/admin/dashboard");
 }
@@ -73,10 +79,10 @@ export function fetchUsers() {
   return adminRequest<{ users: AdminUser[] }>("/api/admin/users");
 }
 
-export function updateUserRole(id: string, role: "customer" | "admin") {
+export function updateUser(id: string, input: UpdateUserInput) {
   return adminRequest<{ user: AdminUser }>(`/api/admin/users/${id}`, {
     method: "PUT",
-    body: JSON.stringify({ role }),
+    body: JSON.stringify(input),
   });
 }
 

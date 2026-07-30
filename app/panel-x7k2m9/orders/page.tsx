@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, Package } from "lucide-react";
 
 import {
   fetchAllOrders,
@@ -59,7 +59,13 @@ export default function AdminOrdersPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
+        <div className="flex items-center gap-3">
+          <Package size={26} className="text-blue-600" />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Order Management</h1>
+            <p className="text-sm text-gray-500">Manage all orders and their statuses</p>
+          </div>
+        </div>
 
         <select
           value={filter}

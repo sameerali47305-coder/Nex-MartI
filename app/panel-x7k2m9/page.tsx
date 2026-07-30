@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { Users, ShoppingBag, Package, DollarSign, Loader2 } from "lucide-react";
+import { Users, ShoppingBag, Package, DollarSign, Loader2, LayoutDashboard } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 import { fetchDashboardStats, type DashboardStats } from "@/helpers/adminApi";
@@ -42,7 +42,14 @@ export default function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Dashboard</h1>
+      {/* Page Header */}
+      <div className="mb-6 flex items-center gap-3">
+        <LayoutDashboard size={26} className="text-blue-600" />
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500">Overview of business statistics and recent activity</p>
+        </div>
+      </div>
 
       {/* Overview Cards */}
       <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">

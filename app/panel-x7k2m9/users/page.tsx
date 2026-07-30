@@ -11,11 +11,12 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 
 import {
   fetchUsers,
-  updateUserRole,
+  updateUser,
   deleteAdminUser,
   type AdminUser,
 } from "@/helpers/adminApi";
@@ -69,16 +70,67 @@ export default function AdminUsersPage() {
   const startCount = filteredUsers.length === 0 ? 0 : (page - 1) * PER_PAGE + 1;
   const endCount = Math.min(page * PER_PAGE, filteredUsers.length);
 
-  async function handleRoleToggle(user: AdminUser) {
-    const nextRole = user.role === "admin" ? "customer" : "admin";
-    setBusyId(user.id);
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editRole, setEditRole] = useState<"customer" | "admin">("customer");
+  const [isSaving, setIsSaving] = useState(false);
+
+  function openEditModal(user: AdminUser) {
+    setEditingUser(user);
+    setEditName(user.name);
+    setEditEmail(user.email);
+    setEditRole(user.role);
+  }
+
+  function closeEditModal() {
+    if (isSaving) return;
+    setEditingUser(null);
+  }
+
+  async function handleSaveEdit() {
+    if (!editingUser) return;
+
+    const name = editName.trim();
+    const email = editEmail.trim();
+
+    if (!name) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+    if (!email) {
+      toast.error("Email cannot be empty");
+      return;
+    }
+
+    const payload: { name?: string; email?: string; role?: "customer" | "admin" } = {};
+    if (name !== editingUser.name) payload.name = name;
+    if (email !== editingUser.email) payload.email = email;
+    if (editRole !== editingUser.role) payload.role = editRole;
+
+    if (Object.keys(payload).length === 0) {
+      setEditingUser(null);
+      return;
+    }
+
+    setIsSaving(true);
+    setBusyId(editingUser.id);
     try {
-      await updateUserRole(user.id, nextRole);
-      toast.success(`${user.name} is now ${nextRole === "admin" ? "an admin" : "a customer"}`);
-      setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, role: nextRole } : u)));
+      const res = await updateUser(editingUser.id, payload);
+      const updated = res.data?.user;
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === editingUser.id
+            ? { ...u, ...(updated ?? payload) }
+            : u
+        )
+      );
+      toast.success(`${name} updated`);
+      setEditingUser(null);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to update role");
+      toast.error(error instanceof Error ? error.message : "Failed to update user");
     } finally {
+      setIsSaving(false);
       setBusyId(null);
     }
   }
@@ -188,13 +240,13 @@ export default function AdminUsersPage() {
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleRoleToggle(user)}
+                        onClick={() => openEditModal(user)}
                         disabled={busyId === user.id}
-                        title={user.role === "admin" ? "Demote to customer" : "Promote to admin"}
+                        title="Edit user"
                         className="flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:border-blue-600 hover:text-blue-600 disabled:opacity-50"
                       >
                         <PencilLine size={14} />
-                        Role
+                        Edit
                       </button>
                       <button
                         onClick={() => handleDelete(user)}
@@ -240,6 +292,80 @@ export default function AdminUsersPage() {
           )}
         </div>
       </div>
+
+      {editingUser && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={closeEditModal}
+        >
+          <div
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">Edit User</h2>
+              <button
+                onClick={closeEditModal}
+                className="rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Name</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-600"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-600"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Role</label>
+                <select
+                  value={editRole}
+                  onChange={(e) => setEditRole(e.target.value as "customer" | "admin")}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-600"
+                >
+                  <option value="customer">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={closeEditModal}
+                disabled={isSaving}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={isSaving}
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+              >
+                {isSaving && <Loader2 size={14} className="animate-spin" />}
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

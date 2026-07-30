@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { updateUserRoleSchema } from "@/validations/admin";
+import { updateUserSchema } from "@/validations/admin";
 import {
   listUsers,
-  updateUserRole,
+  updateUser,
   deleteUser,
   getDashboardStats,
   ServiceError,
@@ -21,13 +21,13 @@ export const listUsersController = withAdminAuth(async () => {
   }
 });
 
-export const updateUserRoleController = withAdminAuth<[RouteParams]>(
+export const updateUserController = withAdminAuth<[RouteParams]>(
   async (req: NextRequest, adminUser, { params }) => {
     try {
       const { id } = await params;
       const body = await req.json();
 
-      const parsed = updateUserRoleSchema.safeParse(body);
+      const parsed = updateUserSchema.safeParse(body);
       if (!parsed.success) {
         return NextResponse.json(
           { success: false, message: parsed.error.issues[0].message },
@@ -35,10 +35,10 @@ export const updateUserRoleController = withAdminAuth<[RouteParams]>(
         );
       }
 
-      const user = await updateUserRole(adminUser.userId, id, parsed.data);
-      return NextResponse.json({ success: true, message: "Role updated", data: { user } });
+      const user = await updateUser(adminUser.userId, id, parsed.data);
+      return NextResponse.json({ success: true, message: "User updated", data: { user } });
     } catch (error) {
-      return handleError(error, "Failed to update role");
+      return handleError(error, "Failed to update user");
     }
   }
 );
