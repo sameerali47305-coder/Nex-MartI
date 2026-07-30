@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { createOrderSchema } from "@/validations/order";
-import { createOrder, listOrders, getOrderById, getOrderBySessionId, ServiceError } from "@/services/order.service";
-import { withAuth } from "@/middleware/auth";
+import { updateOrderStatusSchema } from "@/validations/admin";
+import {
+  createOrder,
+  listOrders,
+  getOrderById,
+  getOrderBySessionId,
+  listAllOrders,
+  updateOrderStatus,
+  ServiceError,
+} from "@/services/order.service";
+import { withAuth, withAdminAuth } from "@/middleware/auth";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -92,6 +101,52 @@ export const getOrderBySessionController = withAuth<[SessionRouteParams]>(
         { success: false, message: "Failed to fetch order" },
         { status: 500 }
       );
+    }
+  }
+);
+
+export const listAllOrdersController = withAdminAuth(async (req: NextRequest) => {
+  try {
+    const status = req.nextUrl.searchParams.get("status") ?? undefined;
+    const orders = await listAllOrders(status);
+    return NextResponse.json({ success: true, message: "Orders fetched", data: { orders } });
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: error.status }
+      );
+    }
+    console.error(error);
+    return NextResponse.json({ success: false, message: "Failed to fetch orders" }, { status: 500 });
+  }
+});
+
+export const updateOrderStatusController = withAdminAuth<[RouteParams]>(
+  async (req: NextRequest, _adminUser, { params }) => {
+    try {
+      const { id } = await params;
+      const body = await req.json();
+
+      const parsed = updateOrderStatusSchema.safeParse(body);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { success: false, message: parsed.error.issues[0].message },
+          { status: 400 }
+        );
+      }
+
+      const order = await updateOrderStatus(id, parsed.data);
+      return NextResponse.json({ success: true, message: "Order updated", data: { order } });
+    } catch (error) {
+      if (error instanceof ServiceError) {
+        return NextResponse.json(
+          { success: false, message: error.message },
+          { status: error.status }
+        );
+      }
+      console.error(error);
+      return NextResponse.json({ success: false, message: "Failed to update order" }, { status: 500 });
     }
   }
 );

@@ -5,6 +5,7 @@ import User from "@/models/User";
 import type { CreateOrderInput } from "@/validations/order";
 import { generateInvoicePdf } from "@/lib/generateInvoicePdf";
 import { sendOrderPlacedEmail } from "@/lib/sendEmail";
+import type { UpdateOrderStatusInput } from "@/validations/admin";
 
 export class ServiceError extends Error {
   status: number;
@@ -191,4 +192,42 @@ export async function getOrderBySessionId(userId: string, stripeSessionId: strin
   }
 
   return serializeOrder(order);
+}
+
+export async function listAllOrders(status?: string) {
+  await connectDB();
+
+  const filter = status ? { status } : {};
+  const orders = await Order.find(filter)
+    .sort({ createdAt: -1 })
+    .populate("user", "name email");
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return orders.map((o: any) => ({
+    id: o._id.toString(),
+    customerName: o.user?.name ?? "Unknown",
+    customerEmail: o.user?.email ?? "",
+    total: o.total,
+    status: o.status,
+    paymentStatus: o.paymentStatus,
+    paymentMethod: o.paymentMethod,
+    itemCount: o.items.length,
+    createdAt: o.createdAt,
+  }));
+}
+
+export async function updateOrderStatus(orderId: string, input: UpdateOrderStatusInput) {
+  await connectDB();
+
+  const order = await Order.findByIdAndUpdate(
+    orderId,
+    { status: input.status },
+    { new: true, runValidators: true }
+  );
+
+  if (!order) {
+    throw new ServiceError("Order not found", 404);
+  }
+
+  return { id: order._id.toString(), status: order.status };
 }

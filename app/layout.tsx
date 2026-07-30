@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import SiteChrome from "@/components/layout/SiteChrome";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
@@ -39,9 +38,7 @@ export default function RootLayout({
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>
-                <Navbar />
-                <main className="flex-1">{children}</main>
-                <Footer />
+                <SiteChrome>{children}</SiteChrome>
                 <Toaster position="top-center" />
               </WishlistProvider>
             </CartProvider>
