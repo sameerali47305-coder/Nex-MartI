@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, Search, Boxes } from "lucide-react";
+import { Loader2, Search, Boxes, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { fetchAdminProducts, updateProductStock, type AdminProduct } from "@/helpers/adminApi";
 
@@ -18,7 +18,7 @@ export default function AdminInventoryPage() {
   const [search, setSearch] = useState("");
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const limit = 10;
+  const limit = 6;
 
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -158,6 +158,30 @@ export default function AdminInventoryPage() {
             </table>
 
             {filtered.length === 0 && <p className="p-5 text-sm text-gray-500">No products found.</p>}
+
+            {total > limit && (
+              <div className="mt-4 flex items-center justify-center gap-4 border-t border-gray-100 pt-4">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage((p) => p - 1)}
+                  className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  <ChevronLeft size={16} />
+                  Prev
+                </button>
+                <span className="text-sm text-gray-600">
+                  Page {page} of {Math.max(1, Math.ceil(total / limit))}
+                </span>
+                <button
+                  disabled={page >= Math.ceil(total / limit)}
+                  onClick={() => setPage((p) => p + 1)}
+                  className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  Next
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

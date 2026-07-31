@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, Plus, Pencil, Trash2, X } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 import {
   fetchAdminCategories,
@@ -32,6 +32,9 @@ export default function AdminCategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [isSaving, setIsSaving] = useState(false);
+
+  const [page, setPage] = useState(1);
+  const limit = 6;
 
   useEffect(() => {
     loadCategories();
@@ -111,6 +114,9 @@ export default function AdminCategoriesPage() {
     }
   }
 
+  const totalPages = Math.max(1, Math.ceil(categories.length / limit));
+  const paginated = categories.slice((page - 1) * limit, page * limit);
+
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -144,7 +150,7 @@ export default function AdminCategoriesPage() {
             </tr>
           </thead>
           <tbody>
-            {categories.map((category) => (
+            {paginated.map((category) => (
               <tr key={category.id} className="border-b border-gray-50">
                 <td className="px-5 py-3 font-medium text-gray-900">{category.name}</td>
                 <td className="px-5 py-3 font-mono text-xs text-gray-500">{category.slug}</td>
@@ -169,7 +175,31 @@ export default function AdminCategoriesPage() {
           </tbody>
         </table>
 
-        {categories.length === 0 && <p className="p-5 text-sm text-gray-500">No categories yet.</p>}
+        {paginated.length === 0 && <p className="p-5 text-sm text-gray-500">No categories yet.</p>}
+
+        {categories.length > limit && (
+          <div className="flex items-center justify-center gap-4 border-t border-gray-100 p-4">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+              className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent"
+            >
+              <ChevronLeft size={16} />
+              Prev
+            </button>
+            <span className="text-sm text-gray-600">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => p + 1)}
+              className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent"
+            >
+              Next
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
       </div>
 
       {isModalOpen && (
