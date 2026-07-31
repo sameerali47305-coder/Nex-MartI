@@ -112,7 +112,7 @@ export default function AdminDashboardPage() {
       <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-semibold text-gray-900">Recent Orders</h2>
-          <Link href="/panel-x7k2m9/orders" className="text-sm font-medium text-blue-600 hover:underline">
+          <Link href="/admin/orders" className="text-sm font-medium text-blue-600 hover:underline">
             View all
           </Link>
         </div>

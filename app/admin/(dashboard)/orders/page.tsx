@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, ChevronLeft, ChevronRight, Package } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, Package, Search } from "lucide-react";
 
 import {
   fetchAllOrders,
@@ -18,16 +18,38 @@ export default function AdminOrdersPage() {
   const [filter, setFilter] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  const [search, setSearch] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState("");
+
   const [page, setPage] = useState(1);
   const PER_PAGE = 8;
-  const totalPages = Math.max(1, Math.ceil(orders.length / PER_PAGE));
-  const visibleOrders = orders.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  // Filter local orders by Search and Payment Status
+  const filteredOrders = orders.filter((order) => {
+    const orderNumber = `NX-${order.id.slice(-6).toUpperCase()}`;
+    const matchesSearch =
+      !search ||
+      orderNumber.toLowerCase().includes(search.toLowerCase()) ||
+      order.customerName.toLowerCase().includes(search.toLowerCase()) ||
+      order.customerEmail.toLowerCase().includes(search.toLowerCase());
+
+    const matchesPayment = !paymentFilter || order.paymentStatus === paymentFilter;
+
+    return matchesSearch && matchesPayment;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PER_PAGE));
+  const visibleOrders = filteredOrders.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   useEffect(() => {
     loadOrders();
     setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, paymentFilter]);
 
   function loadOrders() {
     setIsLoading(true);
@@ -58,7 +80,7 @@ export default function AdminOrdersPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Package size={26} className="text-blue-600" />
           <div>
@@ -67,18 +89,41 @@ export default function AdminOrdersPage() {
           </div>
         </div>
 
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-600"
-        >
-          <option value="">All Statuses</option>
-          {statusOptions.map((s) => (
-            <option key={s} value={s}>
-              {s.charAt(0).toUpperCase() + s.slice(1)}
-            </option>
-          ))}
-        </select>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 sm:max-w-xs">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by order number..."
+              className="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm outline-none focus:border-blue-600"
+            />
+          </div>
+
+          <select
+            value={paymentFilter}
+            onChange={(e) => setPaymentFilter(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-600"
+          >
+            <option value="">All Payments</option>
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="failed">Failed</option>
+          </select>
+
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-600"
+          >
+            <option value="">All Statuses</option>
+            {statusOptions.map((s) => (
+              <option key={s} value={s}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {isLoading ? (
@@ -90,6 +135,7 @@ export default function AdminOrdersPage() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50 text-gray-500">
+                <th className="px-5 py-3">Order #</th>
                 <th className="px-5 py-3">Customer</th>
                 <th className="px-5 py-3">Items</th>
                 <th className="px-5 py-3">Total</th>
@@ -101,6 +147,9 @@ export default function AdminOrdersPage() {
             <tbody>
               {visibleOrders.map((order) => (
                 <tr key={order.id} className="border-b border-gray-50">
+                  <td className="px-5 py-3 font-mono text-xs text-gray-500">
+                    NX-{order.id.slice(-6).toUpperCase()}
+                  </td>
                   <td className="px-5 py-3">
                     <p className="font-medium text-gray-900">{order.customerName}</p>
                     <p className="text-xs text-gray-500">{order.customerEmail}</p>
@@ -142,7 +191,7 @@ export default function AdminOrdersPage() {
             </tbody>
           </table>
 
-          {orders.length > PER_PAGE && (
+          {filteredOrders.length > PER_PAGE && (
             <div className="flex items-center justify-center gap-3 border-t border-gray-100 p-4">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -166,7 +215,7 @@ export default function AdminOrdersPage() {
             </div>
           )}
 
-          {orders.length === 0 && (
+          {filteredOrders.length === 0 && (
             <p className="p-5 text-sm text-gray-500">No orders found.</p>
           )}
         </div>

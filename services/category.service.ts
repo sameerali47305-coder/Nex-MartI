@@ -58,7 +58,14 @@ export async function createCategory(input: CreateCategoryInput) {
   }
 
   const category = await Category.create(input);
-  return category;
+  return {
+    id: category._id.toString(),
+    name: category.name,
+    slug: category.slug,
+    image: category.image,
+    description: category.description,
+    productCount: 0,
+  };
 }
 
 export async function updateCategory(id: string, input: UpdateCategoryInput) {
@@ -73,7 +80,14 @@ export async function updateCategory(id: string, input: UpdateCategoryInput) {
     throw new ServiceError("Category not found", 404);
   }
 
-  return category;
+  return {
+    id: category._id.toString(),
+    name: category.name,
+    slug: category.slug,
+    image: category.image,
+    description: category.description,
+    productCount: await Product.countDocuments({ category: category._id }),
+  };
 }
 
 export async function deleteCategory(id: string) {

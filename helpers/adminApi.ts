@@ -71,6 +71,15 @@ export interface UpdateUserInput {
   role?: "customer" | "admin";
 }
 
+export interface AdminCategory {
+  id: string;
+  name: string;
+  slug: string;
+  image: string;
+  description: string;
+  productCount: number;
+}
+
 export function fetchDashboardStats() {
   return adminRequest<DashboardStats>("/api/admin/dashboard");
 }
@@ -100,4 +109,34 @@ export function updateAdminOrderStatus(id: string, status: string) {
     method: "PUT",
     body: JSON.stringify({ status }),
   });
+}
+
+export function fetchAdminCategories() {
+  return adminRequest<{ categories: AdminCategory[] }>("/api/categories");
+}
+
+export function createAdminCategory(input: {
+  name: string;
+  slug: string;
+  image?: string;
+  description?: string;
+}) {
+  return adminRequest<{ category: AdminCategory }>("/api/categories", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateAdminCategory(
+  id: string,
+  input: Partial<{ name: string; slug: string; image: string; description: string }>
+) {
+  return adminRequest<{ category: AdminCategory }>(`/api/categories/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteAdminCategory(id: string) {
+  return adminRequest<null>(`/api/categories/${id}`, { method: "DELETE" });
 }

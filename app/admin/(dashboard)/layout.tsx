@@ -4,14 +4,15 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-import { LayoutDashboard, Users, ShoppingBag, LogOut, ArrowLeftCircle, Loader2 } from "lucide-react";
+import { LayoutDashboard, Users, ShoppingBag,Tag, LogOut, ArrowLeftCircle, Loader2 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
-  { href: "/panel-x7k2m9", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/panel-x7k2m9/users", label: "Users", icon: Users },
-  { href: "/panel-x7k2m9/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+  { href: "/admin/categories", label: "Categories", icon: Tag },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
