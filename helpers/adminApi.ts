@@ -150,9 +150,11 @@ export interface AdminProduct {
   category?: { name: string; slug: string } | null;
 }
 
-export function fetchAdminProducts(params: { search?: string; page?: number; limit?: number } = {}) {
+export function fetchAdminProducts(params: { search?: string; page?: number; limit?: number; status?: string; category?: string } = {}) {
   const query = new URLSearchParams();
   if (params.search) query.set("search", params.search);
+  if (params.category) query.set("category", params.category);
+  if (params.status && params.status !== "all") query.set("status", params.status);
   query.set("page", String(params.page ?? 1));
   query.set("limit", String(params.limit ?? 10));
   return adminRequest<{ products: AdminProduct[]; total: number; page: number; totalPages: number }>(
@@ -165,4 +167,25 @@ export function updateProductStock(id: string, stock: number) {
     method: "PUT",
     body: JSON.stringify({ stock }),
   });
+}
+
+export function createAdminProduct(input: {
+  name: string; categoryId: string; price: number; oldPrice?: number;
+  image: string; description: string; stock: number;
+  isNewArrival?: boolean; isSale?: boolean;
+}) {
+  return adminRequest<{ product: AdminProduct }>("/api/products", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function updateAdminProduct(id: string, input: Partial<{
+  name: string; categoryId: string; price: number; oldPrice: number;
+  image: string; description: string; stock: number; isNewArrival: boolean; isSale: boolean;
+}>) {
+  return adminRequest<{ product: AdminProduct }>(`/api/products/${id}`, { method: "PUT", body: JSON.stringify(input) });
+}
+export function deleteAdminProduct(id: string) {
+  return adminRequest<null>(`/api/products/${id}`, { method: "DELETE" });
 }

@@ -9,6 +9,7 @@ import {
   Users,
   ShoppingBag,
   Tag,
+   Package,
   Boxes,
   LogOut,
   ArrowLeftCircle,
@@ -23,6 +24,7 @@ const navLinks = [
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/categories", label: "Categories", icon: Tag },
   { href: "/admin/inventory", label: "Inventory", icon: Boxes },
+  { href: "/admin/products", label: "Products", icon: Package },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
