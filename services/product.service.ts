@@ -137,7 +137,7 @@ export async function updateProduct(id: string, input: UpdateProductInput) {
   }
 
   const product = await Product.findByIdAndUpdate(id, updateData, {
-    new: true,
+     returnDocument: "after",
     runValidators: true,
   }).populate("category", "name slug");
 

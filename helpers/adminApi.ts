@@ -140,3 +140,29 @@ export function updateAdminCategory(
 export function deleteAdminCategory(id: string) {
   return adminRequest<null>(`/api/categories/${id}`, { method: "DELETE" });
 }
+
+export interface AdminProduct {
+  _id: string;
+  name: string;
+  image: string;
+  price: number;
+  stock: number;
+  category?: { name: string; slug: string } | null;
+}
+
+export function fetchAdminProducts(params: { search?: string; page?: number; limit?: number } = {}) {
+  const query = new URLSearchParams();
+  if (params.search) query.set("search", params.search);
+  query.set("page", String(params.page ?? 1));
+  query.set("limit", String(params.limit ?? 10));
+  return adminRequest<{ products: AdminProduct[]; total: number; page: number; totalPages: number }>(
+    `/api/products?${query.toString()}`
+  );
+}
+
+export function updateProductStock(id: string, stock: number) {
+  return adminRequest<{ product: AdminProduct }>(`/api/products/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({ stock }),
+  });
+}

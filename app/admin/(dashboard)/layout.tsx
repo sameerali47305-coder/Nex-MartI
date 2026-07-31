@@ -4,7 +4,16 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-import { LayoutDashboard, Users, ShoppingBag,Tag, LogOut, ArrowLeftCircle, Loader2 } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  ShoppingBag,
+  Tag,
+  Boxes,
+  LogOut,
+  ArrowLeftCircle,
+  Loader2,
+} from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
 
@@ -13,6 +22,7 @@ const navLinks = [
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/categories", label: "Categories", icon: Tag },
+  { href: "/admin/inventory", label: "Inventory", icon: Boxes },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -37,10 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    /* Edit 1: Fixed outer container to viewport height and hid root scroll */
     <div className="flex h-screen overflow-hidden bg-gray-50">
-
-      {/* Edit 2: Set sidebar to 100% height and enabled independent vertical scrolling */}
       <aside className="flex h-full w-64 shrink-0 flex-col overflow-y-auto bg-blue-950 text-blue-100">
         <div className="flex items-center gap-2 px-6 py-6">
           <span className="text-lg font-bold text-white">NexMart</span>
@@ -80,7 +87,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* Edit 3: Prevented right container overflow and enabled vertical scroll on main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex items-center justify-between border-b border-gray-200 bg-white px-8 py-4">
           <div />
@@ -101,7 +107,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <main className="flex-1 overflow-y-auto p-8">{children}</main>
       </div>
-
     </div>
   );
 }

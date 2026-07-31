@@ -72,7 +72,7 @@ export async function updateCategory(id: string, input: UpdateCategoryInput) {
   await connectDB();
 
   const category = await Category.findByIdAndUpdate(id, input, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
 
