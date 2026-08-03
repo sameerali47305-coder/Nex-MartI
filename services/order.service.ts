@@ -223,7 +223,7 @@ export async function updateOrderStatus(orderId: string, input: UpdateOrderStatu
   const order = await Order.findByIdAndUpdate(
     orderId,
     { status: input.status },
-    { new: true, runValidators: true }
+    { returnDocument: "after", runValidators: true }
   );
 
   if (!order) {

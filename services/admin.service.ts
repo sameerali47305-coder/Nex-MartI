@@ -50,7 +50,7 @@ export async function updateUser(
   let user;
   try {
     user = await User.findByIdAndUpdate(targetUserId, update, {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     });
   } catch (error: unknown) {
