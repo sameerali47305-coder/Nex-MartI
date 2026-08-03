@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Loader2, Plus, Pencil, Trash2, X, ChevronLeft, ChevronRight } from "lucide-react";
-
+import { Loader2, Plus, Pencil, Trash2, X, ChevronLeft, ChevronRight, FolderTree } from "lucide-react";
+import ImageUploadField from "@/components/admin/ImageUploadField";
 import {
   fetchAdminCategories,
   createAdminCategory,
@@ -127,8 +127,18 @@ export default function AdminCategoriesPage() {
 
   return (
     <div>
+      {/* Updated Header Section */}
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
+        <div>
+          <div className="flex items-center gap-2.5">
+            <FolderTree className="h-6 w-6 text-blue-600" />
+            <h1 className="text-2xl font-bold text-gray-900">Category Management</h1>
+          </div>
+          <p className="mt-1 text-sm text-gray-900">
+            Organize your products into categories
+          </p>
+        </div>
+
         <button
           onClick={openCreateModal}
           className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700"
@@ -236,15 +246,10 @@ export default function AdminCategoriesPage() {
                 />
               </div>
 
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-700">Image path</label>
-                <input
-                  value={form.image}
-                  onChange={(e) => setForm({ ...form, image: e.target.value })}
-                  placeholder="/products/example.jpeg"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-blue-600"
-                />
-              </div>
+              <ImageUploadField
+                value={form.image}
+                onChange={(url) => setForm({ ...form, image: url })}
+              />
 
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">Description</label>

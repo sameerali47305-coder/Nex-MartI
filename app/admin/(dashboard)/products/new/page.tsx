@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { ChevronLeft } from "lucide-react";
 
 import { fetchAdminCategories, createAdminProduct, type AdminCategory } from "@/helpers/adminApi";
+import ImageUploadField from "@/components/admin/ImageUploadField";
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -82,12 +83,10 @@ export default function NewProductPage() {
                 className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-blue-600" />
             </div>
           </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Image path</label>
-            <input required value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })}
-              placeholder="/products/example.jpeg"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-blue-600" />
-          </div>
+          <ImageUploadField
+            value={form.image}
+            onChange={(url) => setForm({ ...form, image: url })}
+          />
         </div>
 
         <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">

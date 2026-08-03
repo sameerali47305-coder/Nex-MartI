@@ -3,17 +3,20 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
 import {
   fetchAdminCategories,
+  fetchAdminProductById,
   updateAdminProduct,
   type AdminCategory,
 } from "@/helpers/adminApi";
+import ImageUploadField from "@/components/admin/ImageUploadField";
 
 export default function EditProductPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -29,24 +32,23 @@ export default function EditProductPage() {
   useEffect(() => {
     fetchAdminCategories().then((r) => r.data && setCategories(r.data.categories));
 
-    fetch(`/api/products/${id}`)
-      .then((r) => r.json())
+    fetchAdminProductById(id)
       .then((r) => {
-        const p = r.data;
+        const p = r.data?.product;
         if (!p) return;
-
         setForm({
           name: p.name ?? "",
           description: p.description ?? "",
           price: String(p.price ?? ""),
           oldPrice: p.oldPrice ? String(p.oldPrice) : "",
-          categoryId: p.category?._id ?? p.category ?? "",
+          categoryId: p.category?._id ?? "",
           tag: p.isSale ? "sale" : p.isNewArrival ? "new" : "none",
           stock: String(p.stock ?? "0"),
           image: p.image ?? "",
         });
       })
-      .catch((e) => toast.error(e instanceof Error ? e.message : "Failed to load product details"));
+      .catch((e) => toast.error(e instanceof Error ? e.message : "Failed to load product details"))
+      .finally(() => setIsLoading(false));
   }, [id]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -71,6 +73,14 @@ export default function EditProductPage() {
     } finally {
       setIsSaving(false);
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-48 items-center justify-center">
+        <Loader2 size={26} className="animate-spin text-blue-600" />
+      </div>
+    );
   }
 
   return (
@@ -133,16 +143,10 @@ export default function EditProductPage() {
             </div>
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Image Path / URL</label>
-            <input
-              required
-              value={form.image}
-              onChange={(e) => setForm({ ...form, image: e.target.value })}
-              placeholder="Image path"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-blue-600"
-            />
-          </div>
+          <ImageUploadField
+            value={form.image}
+            onChange={(url) => setForm({ ...form, image: url })}
+          />
         </div>
 
         <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">

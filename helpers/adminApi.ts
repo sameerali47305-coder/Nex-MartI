@@ -189,3 +189,36 @@ export function updateAdminProduct(id: string, input: Partial<{
 export function deleteAdminProduct(id: string) {
   return adminRequest<null>(`/api/products/${id}`, { method: "DELETE" });
 }
+
+export interface AdminProductDetail {
+  _id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  oldPrice?: number;
+  image: string;
+  stock: number;
+  isNewArrival: boolean;
+  isSale: boolean;
+  category: { _id: string; name: string; slug: string };
+}
+
+export function fetchAdminProductById(id: string) {
+  return adminRequest<{ product: AdminProductDetail }>(`/api/products/${id}`);
+}
+
+export function uploadProductImage(file: File) {
+  const token = getToken();
+  const formData = new FormData();
+  formData.append("file", file);
+  return fetch("/api/upload", {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  }).then(async (res) => {
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.message || "Upload failed");
+    return body as { success: boolean; message: string; data: { url: string } };
+  });
+}
