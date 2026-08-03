@@ -9,6 +9,9 @@ import {
 } from "react";
 
 import { getToken, saveToken, clearToken } from "@/helpers/authApi";
+import { useFcmRegister } from "@/hooks/useFcmRegister";
+import { onForegroundMessage } from "@/lib/firebase-client";
+import toast from "react-hot-toast";
 
 export interface AuthUser {
   id: string;
@@ -83,6 +86,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearToken();
     setUser(null);
   };
+
+  useFcmRegister(Boolean(user), getToken());
+
+  // While the tab is open and focused, background pushes don't show a
+  // native OS popup - so show a toast instead.
+  useEffect(() => {
+    if (!user) return;
+
+    onForegroundMessage((payload) => {
+      const notification = (payload as { notification?: { title?: string; body?: string } })
+        ?.notification;
+      if (!notification) return;
+      toast(`${notification.title ?? "Notification"}${notification.body ? `: ${notification.body}` : ""}`);
+    });
+  }, [user]);
 
   return (
     <AuthContext.Provider

@@ -6,6 +6,7 @@ import type { CreateOrderInput } from "@/validations/order";
 import { generateInvoicePdf } from "@/lib/generateInvoicePdf";
 import { sendOrderPlacedEmail } from "@/lib/sendEmail";
 import type { UpdateOrderStatusInput } from "@/validations/admin";
+import { sendPushToUser } from "@/lib/sendPushNotification";
 
 export class ServiceError extends Error {
   status: number;
@@ -229,5 +230,13 @@ export async function updateOrderStatus(orderId: string, input: UpdateOrderStatu
     throw new ServiceError("Order not found", 404);
   }
 
+sendPushToUser(order.user.toString(), {
+  title: "Order update",
+  body: `Your order is now ${input.status}`,
+})
+  .then(() => console.log("PUSH: attempted send to user", order.user.toString()))
+  .catch((err) => console.error("PUSH ERROR:", err));
+
   return { id: order._id.toString(), status: order.status };
+
 }
