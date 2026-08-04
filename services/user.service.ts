@@ -22,7 +22,7 @@ export async function updateProfile(userId: string, { name, email }: UpdateProfi
   const user = await User.findByIdAndUpdate(
     userId,
     { name, email },
-    { new: true, runValidators: true }
+    { returnDocument: "after", runValidators: true }
   );
 
   if (!user) {
@@ -58,4 +58,10 @@ export async function changePassword(
   await user.save();
 
   return { email: user.email };
+}
+export async function setNotificationPreference(userId: string, enabled: boolean) {
+  await connectDB();
+  const user = await User.findByIdAndUpdate(userId, { notificationsEnabled: enabled }, { returnDocument: "after" });
+  if (!user) throw new ServiceError("User not found", 404);
+  return { notificationsEnabled: user.notificationsEnabled };
 }

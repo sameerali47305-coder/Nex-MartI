@@ -26,6 +26,7 @@ export const GET = withAuth(async (_req: NextRequest, authUser) => {
         email: user.email,
         role: user.role,
         isVerified: user.isVerified,
+        notificationsEnabled: user.notificationsEnabled,
       },
     },
   });

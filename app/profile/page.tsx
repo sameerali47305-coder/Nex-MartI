@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Loader2, User, Mail, Lock } from "lucide-react";
+import { Loader2, User, Mail, Lock, Bell } from "lucide-react";
 
 import Container from "@/components/ui/Container";
 import { useAuth } from "@/context/AuthContext";
-import { updateProfileRequest, changePasswordRequest } from "@/helpers/userApi";
+import {
+  updateProfileRequest,
+  changePasswordRequest,
+  updateNotificationPreferenceRequest,
+} from "@/helpers/userApi";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -18,6 +22,8 @@ export default function ProfilePage() {
 
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "" });
   const [isSavingPassword, setIsSavingPassword] = useState(false);
+
+  const [isTogglingNotifications, setIsTogglingNotifications] = useState(false);
 
   // Redirect guests — this page only makes sense for a logged-in user.
   useEffect(() => {
@@ -70,6 +76,21 @@ export default function ProfilePage() {
       toast.error(error instanceof Error ? error.message : "Failed to change password");
     } finally {
       setIsSavingPassword(false);
+    }
+  }
+
+  async function handleToggleNotifications() {
+    if (!user) return;
+    const next = !(user.notificationsEnabled ?? true);
+    setIsTogglingNotifications(true);
+    try {
+      await updateNotificationPreferenceRequest(next);
+      updateUser({ ...user, notificationsEnabled: next });
+      toast.success(`Notifications ${next ? "enabled" : "disabled"}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to update preference");
+    } finally {
+      setIsTogglingNotifications(false);
     }
   }
 
@@ -144,6 +165,39 @@ export default function ProfilePage() {
                 Save Changes
               </button>
             </form>
+          </div>
+
+          {/* Notifications Card */}
+          <div className="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Bell size={20} className="text-gray-500" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Push Notifications</p>
+                  <p className="text-sm text-gray-500">
+                    {user.notificationsEnabled ?? true
+                      ? "You'll receive order and promo updates"
+                      : "You won't receive any push notifications"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={user.notificationsEnabled ?? true}
+                onClick={handleToggleNotifications}
+                disabled={isTogglingNotifications}
+                className={`relative h-6 w-11 shrink-0 rounded-full transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                  user.notificationsEnabled ?? true ? "bg-blue-600" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                    user.notificationsEnabled ?? true ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
           </div>
 
           {/* Change password */}

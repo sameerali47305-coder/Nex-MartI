@@ -8,6 +8,7 @@ export interface IUser extends Document {
   role: "customer" | "admin";
   isVerified: boolean;
   fcmTokens: string[];
+  notificationsEnabled: boolean;
   otpCode?: string;
   otpExpiry?: Date;
   resetOtpCode?: string;
@@ -49,6 +50,10 @@ const UserSchema = new Schema<IUser>(
     fcmTokens: {
       type: [String],
       default: [],
+    },
+    notificationsEnabled: {
+      type: Boolean,
+      default: true,
     },
     otpCode: {
       type: String,

@@ -252,12 +252,15 @@ export async function updateOrderStatus(orderId: string, input: UpdateOrderStatu
     .then(() => console.log("PUSH: attempted send to user", order.user.toString()))
     .catch((err) => console.error("PUSH ERROR:", err));
 
-  createNotification(order.user.toString(), {
-    title: "Order update",
-    message: `Your order is now ${input.status}`,
-    type: "order",
-    link: `/orders/${order._id}`,
-  }).catch((err) => console.error("NOTIFICATION ERROR:", err));
+  const buyer = await User.findById(order.user).select("notificationsEnabled");
+  if (buyer?.notificationsEnabled !== false) {
+    createNotification(order.user.toString(), {
+      title: "Order update",
+      message: `Your order is now ${input.status}`,
+      type: "order",
+      link: `/orders/${order._id}`,
+    }).catch((err) => console.error("NOTIFICATION ERROR:", err));
+  }
 
   return { id: order._id.toString(), status: order.status };
 }

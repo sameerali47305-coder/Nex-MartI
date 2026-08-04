@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { updateProfileSchema, changePasswordSchema } from "@/validations/user";
-import { updateProfile, changePassword, ServiceError } from "@/services/user.service";
+import {
+  updateProfile,
+  changePassword,
+  setNotificationPreference,
+  ServiceError,
+} from "@/services/user.service";
 import { withAuth } from "@/middleware/auth";
 
 export const updateProfileController = withAuth(async (req: NextRequest, user) => {
@@ -48,6 +53,26 @@ export const changePasswordController = withAuth(async (req: NextRequest, user) 
     });
   } catch (error) {
     return handleServiceError(error, "Failed to change password");
+  }
+});
+
+export const updateNotificationPreferenceController = withAuth(async (req: NextRequest, user) => {
+  try {
+    const body = await req.json();
+    if (typeof body.enabled !== "boolean") {
+      return NextResponse.json(
+        { success: false, message: "enabled must be true or false" },
+        { status: 400 }
+      );
+    }
+    const result = await setNotificationPreference(user.userId, body.enabled);
+    return NextResponse.json({
+      success: true,
+      message: `Notifications ${result.notificationsEnabled ? "enabled" : "disabled"}`,
+      data: result,
+    });
+  } catch (error) {
+    return handleServiceError(error, "Failed to update notification preference");
   }
 });
 

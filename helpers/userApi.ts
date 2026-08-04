@@ -38,3 +38,10 @@ export function changePasswordRequest(input: { currentPassword: string; newPassw
     body: JSON.stringify(input),
   });
 }
+
+export function updateNotificationPreferenceRequest(enabled: boolean) {
+  return userRequest<{ notificationsEnabled: boolean }>("/api/users/notifications", {
+    method: "PATCH",
+    body: JSON.stringify({ enabled }),
+  });
+}
