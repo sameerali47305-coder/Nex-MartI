@@ -27,3 +27,6 @@ export function markNotificationRead(id: string) {
 export function markAllNotificationsRead() {
   return notifRequest<null>("/api/notifications/read-all", { method: "PUT" });
 }
+export function deleteNotification(id: string) {
+  return notifRequest<null>(`/api/notifications/${id}`, { method: "DELETE" });
+}

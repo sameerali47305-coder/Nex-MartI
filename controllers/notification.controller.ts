@@ -4,6 +4,7 @@ import {
   getNotifications,
   markAsRead,
   markAllAsRead,
+  deleteNotification,
   ServiceError,
 } from "@/services/notification.service";
 import { withAuth } from "@/middleware/auth";
@@ -39,6 +40,18 @@ export const markAllAsReadController = withAuth(async (_req: NextRequest, user) 
     return handleError(error, "Failed to update notifications");
   }
 });
+
+export const deleteNotificationController = withAuth<[RouteParams]>(
+  async (_req: NextRequest, user, { params }) => {
+    try {
+      const { id } = await params;
+      await deleteNotification(user.userId, id);
+      return NextResponse.json({ success: true, message: "Notification deleted" });
+    } catch (error) {
+      return handleError(error, "Failed to delete notification");
+    }
+  }
+);
 
 function handleError(error: unknown, fallbackMessage: string) {
   if (error instanceof ServiceError) {

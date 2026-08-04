@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, X } from "lucide-react";
 
-import { fetchNotifications, markNotificationRead, markAllNotificationsRead, type AppNotification } from "@/helpers/notificationApi";
+import { fetchNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification, type AppNotification } from "@/helpers/notificationApi";
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
@@ -49,6 +49,14 @@ export default function NotificationBell() {
     setUnreadCount(0);
   }
 
+  async function handleDelete(e: React.MouseEvent, n: AppNotification) {
+    e.preventDefault();
+    e.stopPropagation();
+    await deleteNotification(n.id).catch(() => {});
+    setNotifications((prev) => prev.filter((x) => x.id !== n.id));
+    if (!n.isRead) setUnreadCount((c) => Math.max(0, c - 1));
+  }
+
   return (
     <div ref={ref} className="relative inline-flex">
       <button
@@ -83,8 +91,15 @@ export default function NotificationBell() {
                   key={n.id}
                   href={n.link ?? "#"}
                   onClick={() => handleOpen(n)}
-                  className={`block border-b border-gray-50 px-4 py-3 text-sm transition hover:bg-gray-50 ${!n.isRead ? "bg-blue-50/50" : ""}`}
+                  className={`group relative block border-b border-gray-50 px-4 py-3 pr-9 text-sm transition hover:bg-gray-50 ${!n.isRead ? "bg-blue-50/50" : ""}`}
                 >
+                  <button
+                    onClick={(e) => handleDelete(e, n)}
+                    aria-label="Delete notification"
+                    className="absolute right-2 top-2 rounded-md p-1 text-gray-300 opacity-0 transition hover:bg-gray-100 hover:text-gray-600 group-hover:opacity-100"
+                  >
+                    <X size={14} />
+                  </button>
                   <p className="font-medium text-gray-900">{n.title}</p>
                   <p className="mt-0.5 text-gray-500">{n.message}</p>
                   <p className="mt-1 text-xs text-gray-400">{new Date(n.createdAt).toLocaleString()}</p>

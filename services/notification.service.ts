@@ -64,3 +64,10 @@ export async function markAllAsRead(userId: string) {
   await Notification.updateMany({ user: userId, isRead: false }, { isRead: true });
   return { success: true };
 }
+
+export async function deleteNotification(userId: string, notificationId: string) {
+  await connectDB();
+  const notification = await Notification.findOneAndDelete({ _id: notificationId, user: userId });
+  if (!notification) throw new ServiceError("Notification not found", 404);
+  return { id: notification._id.toString() };
+}
