@@ -26,6 +26,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   login: (user: AuthUser, token: string) => void;
   logout: () => void;
+  updateUser: (user: AuthUser) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -87,6 +88,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  // Called after a profile update so the navbar/dropdown reflect the new
+  // name/email immediately, without needing a full /api/auth/me refetch.
+  const updateUser = (updatedUser: AuthUser) => {
+    setUser(updatedUser);
+  };
+
   useFcmRegister(Boolean(user), getToken());
 
   // While the tab is open and focused, background pushes don't show a
@@ -110,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: Boolean(user),
         login,
         logout,
+        updateUser,
       }}
     >
       {children}

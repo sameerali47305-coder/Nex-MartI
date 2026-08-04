@@ -1,0 +1,40 @@
+import { getToken } from "./authApi";
+
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data?: T;
+}
+
+async function userRequest<T>(url: string, options?: RequestInit): Promise<ApiResponse<T>> {
+  const token = getToken();
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options?.headers,
+    },
+  });
+
+  const body = (await res.json()) as ApiResponse<T>;
+
+  if (!res.ok) {
+    throw new Error(body.message || "Something went wrong");
+  }
+
+  return body;
+}
+
+export function updateProfileRequest(input: { name: string; email: string }) {
+  return userRequest<{
+    user: { id: string; name: string; email: string; role: string; isVerified: boolean };
+  }>("/api/users/me", { method: "PATCH", body: JSON.stringify(input) });
+}
+
+export function changePasswordRequest(input: { currentPassword: string; newPassword: string }) {
+  return userRequest<null>("/api/users/change-password", {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}

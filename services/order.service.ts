@@ -7,6 +7,7 @@ import { generateInvoicePdf } from "@/lib/generateInvoicePdf";
 import { sendOrderPlacedEmail } from "@/lib/sendEmail";
 import type { UpdateOrderStatusInput } from "@/validations/admin";
 import { sendPushToUser } from "@/lib/sendPushNotification";
+import { createNotification, notifyAllAdmins } from "@/services/notification.service";
 
 export class ServiceError extends Error {
   status: number;
@@ -101,6 +102,13 @@ export async function createOrder(userId: string, input: CreateOrderInput) {
     console.error("Failed to send order confirmation email:", emailError);
   }
 
+  notifyAllAdmins({
+    title: "New order placed",
+    message: `Order total: $${order.total.toFixed(2)}`,
+    type: "order",
+    link: `/admin/orders`,
+  }).catch((err) => console.error("NOTIFICATION ERROR:", err));
+
   return serialized;
 }
 
@@ -181,6 +189,13 @@ export async function createOrderFromCheckoutSession(
   cart.items = [];
   await cart.save();
 
+  notifyAllAdmins({
+    title: "New order placed",
+    message: `Order total: $${order.total.toFixed(2)}`,
+    type: "order",
+    link: `/admin/orders`,
+  }).catch((err) => console.error("NOTIFICATION ERROR:", err));
+
   return serializeOrder(order);
 }
 
@@ -230,13 +245,19 @@ export async function updateOrderStatus(orderId: string, input: UpdateOrderStatu
     throw new ServiceError("Order not found", 404);
   }
 
-sendPushToUser(order.user.toString(), {
-  title: "Order update",
-  body: `Your order is now ${input.status}`,
-})
-  .then(() => console.log("PUSH: attempted send to user", order.user.toString()))
-  .catch((err) => console.error("PUSH ERROR:", err));
+  sendPushToUser(order.user.toString(), {
+    title: "Order update",
+    body: `Your order is now ${input.status}`,
+  })
+    .then(() => console.log("PUSH: attempted send to user", order.user.toString()))
+    .catch((err) => console.error("PUSH ERROR:", err));
+
+  createNotification(order.user.toString(), {
+    title: "Order update",
+    message: `Your order is now ${input.status}`,
+    type: "order",
+    link: `/orders/${order._id}`,
+  }).catch((err) => console.error("NOTIFICATION ERROR:", err));
 
   return { id: order._id.toString(), status: order.status };
-
 }
