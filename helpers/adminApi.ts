@@ -222,3 +222,10 @@ export function uploadProductImage(file: File) {
     return body as { success: boolean; message: string; data: { url: string } };
   });
 }
+
+export function sendPromotionalBroadcast(input: { title: string; body: string }) {
+  return adminRequest<{ recipients: number }>("/api/admin/promotions", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}

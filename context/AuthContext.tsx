@@ -97,16 +97,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useFcmRegister(Boolean(user), getToken());
 
-  // While the tab is open and focused, background pushes don't show a
-  // native OS popup - so show a toast instead.
+  // Show both an in-app toast and a native OS browser notification when foreground push messages arrive
   useEffect(() => {
     if (!user) return;
 
     onForegroundMessage((payload) => {
-      const notification = (payload as { notification?: { title?: string; body?: string } })
-        ?.notification;
+      const notification = (
+        payload as { notification?: { title?: string; body?: string } }
+      )?.notification;
       if (!notification) return;
-      toast(`${notification.title ?? "Notification"}${notification.body ? `: ${notification.body}` : ""}`);
+
+      toast(
+        `${notification.title ?? "Notification"}${
+          notification.body ? `: ${notification.body}` : ""
+        }`
+      );
+
+      if (
+        typeof window !== "undefined" &&
+        Notification.permission === "granted"
+      ) {
+        new Notification(notification.title ?? "NexMart", {
+          body: notification.body ?? "",
+          icon: "/favicon.ico",
+          requireInteraction: true,
+        });
+      }
     });
   }, [user]);
 

@@ -7,7 +7,7 @@ export async function sendPushToUser(
   data?: Record<string, string>
 ) {
   const user = await User.findById(userId).select("fcmTokens notificationsEnabled");
- console.log("PUSH DEBUG: user", userId, "has tokens:", user?.fcmTokens?.length ?? 0, "notificationsEnabled:", user?.notificationsEnabled);
+  console.log("PUSH DEBUG: user", userId, "has tokens:", user?.fcmTokens?.length ?? 0, "notificationsEnabled:", user?.notificationsEnabled);
 
   if (!user || !user.fcmTokens || user.fcmTokens.length === 0) return;
 
@@ -60,7 +60,7 @@ export async function sendPushToAllUsers(notification: { title: string; body: st
   }).select("fcmTokens");
 
   const allTokens = users.flatMap((u) => u.fcmTokens);
-  if (allTokens.length === 0) return;
+  if (allTokens.length === 0) return 0;
 
   for (let i = 0; i < allTokens.length; i += 500) {
     await adminMessaging.sendEachForMulticast({
@@ -68,4 +68,6 @@ export async function sendPushToAllUsers(notification: { title: string; body: st
       notification,
     });
   }
+
+  return allTokens.length;
 }

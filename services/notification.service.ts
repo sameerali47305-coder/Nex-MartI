@@ -25,6 +25,12 @@ export async function notifyAllAdmins(data: { title: string; message: string; ty
   const admins = await User.find({ role: "admin" }).select("_id");
   await Notification.insertMany(admins.map((admin) => ({ user: admin._id, ...data })));
 }
+// Notifies every customer who hasn't opted out — used for promo broadcasts.
+export async function notifyAllSubscribedUsers(data: { title: string; message: string; type?: "order" | "promo" | "system"; link?: string }) {
+  await connectDB();
+  const users = await User.find({ notificationsEnabled: { $ne: false } }).select("_id");
+  await Notification.insertMany(users.map((u) => ({ user: u._id, ...data })));
+}
 
 export async function getNotifications(userId: string) {
   await connectDB();
