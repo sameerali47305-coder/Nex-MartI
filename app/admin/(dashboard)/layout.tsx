@@ -15,6 +15,7 @@ import {
   ArrowLeftCircle,
   Loader2,
    Megaphone,
+   MessageSquare,
 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
@@ -28,6 +29,7 @@ const navLinks = [
   { href: "/admin/inventory", label: "Inventory", icon: Boxes },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/promotions", label: "Promotions", icon: Megaphone },
+  { href: "/admin/support", label: "Support", icon: MessageSquare },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
