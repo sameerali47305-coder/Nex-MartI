@@ -29,6 +29,7 @@ export interface ConversationSummary {
   lastMessage: string;
   lastMessageAt: Date | null;
   unreadByAdmin: boolean;
+  unreadByCustomer: boolean;
 }
 
 export async function ensureConversation(userId: string, name: string, email: string) {
@@ -77,21 +78,31 @@ export function subscribeToMessages(conversationId: string, cb: (msgs: ChatMessa
 }
 
 export function subscribeToConversations(cb: (convos: ConversationSummary[]) => void) {
-  const q = query(collection(db, "conversations"), orderBy("lastMessageAt", "desc"));
+  const q = query(collection(db, "conversations"));
   return onSnapshot(q, (snap) => {
-    cb(
-      snap.docs.map((d) => {
-        const data = d.data();
-        return {
-          id: d.id,
-          customerName: data.customerName ?? "Customer",
-          customerEmail: data.customerEmail ?? "",
-          lastMessage: data.lastMessage ?? "",
-          lastMessageAt: data.lastMessageAt instanceof Timestamp ? data.lastMessageAt.toDate() : null,
-          unreadByAdmin: Boolean(data.unreadByAdmin),
-        };
-      })
-    );
+    const list = snap.docs.map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        customerName: data.customerName ?? "Customer",
+        customerEmail: data.customerEmail ?? "",
+        lastMessage: data.lastMessage ?? "",
+        lastMessageAt: data.lastMessageAt instanceof Timestamp ? data.lastMessageAt.toDate() : null,
+        unreadByAdmin: Boolean(data.unreadByAdmin),
+        unreadByCustomer: Boolean(data.unreadByCustomer),
+      };
+    });
+    // Firestore's orderBy would silently exclude conversations that have no
+    // messages yet (e.g. one an admin just started) since they lack the
+    // sorted field entirely — sorting client-side avoids that, and puts
+    // those brand-new empty conversations first so they're easy to open.
+    list.sort((a, b) => {
+      if (!a.lastMessageAt && !b.lastMessageAt) return 0;
+      if (!a.lastMessageAt) return -1;
+      if (!b.lastMessageAt) return 1;
+      return b.lastMessageAt.getTime() - a.lastMessageAt.getTime();
+    });
+    cb(list);
   });
 }
 
@@ -100,4 +111,17 @@ export async function markConversationRead(conversationId: string, role: "custom
     doc(db, "conversations", conversationId),
     role === "admin" ? { unreadByAdmin: false } : { unreadByCustomer: false }
   );
+}
+
+export function subscribeToConversation(
+  conversationId: string,
+  cb: (flags: { unreadByCustomer: boolean; unreadByAdmin: boolean }) => void
+) {
+  return onSnapshot(doc(db, "conversations", conversationId), (snap) => {
+    const data = snap.data();
+    cb({
+      unreadByCustomer: Boolean(data?.unreadByCustomer),
+      unreadByAdmin: Boolean(data?.unreadByAdmin),
+    });
+  });
 }
