@@ -8,17 +8,21 @@ import {
   onSnapshot,
   orderBy,
   query,
+  where,
   serverTimestamp,
   updateDoc,
+  writeBatch,
+  getDocs,
   Timestamp,
 } from "firebase/firestore";
-import { db } from "@/lib/firestore-client";  
+import { db } from "@/lib/firestore-client";
 
 export interface ChatMessage {
   id: string;
   senderId: string;
   senderRole: "customer" | "admin";
   text: string;
+  read: boolean;
   createdAt: Date | null;
 }
 
@@ -50,6 +54,7 @@ export async function sendChatMessage(
     senderId,
     senderRole,
     text,
+    read: false,
     createdAt: serverTimestamp(),
   });
   await updateDoc(doc(db, "conversations", conversationId), {
@@ -70,6 +75,7 @@ export function subscribeToMessages(conversationId: string, cb: (msgs: ChatMessa
           senderId: data.senderId,
           senderRole: data.senderRole,
           text: data.text,
+          read: Boolean(data.read),
           createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : null,
         };
       })
@@ -92,10 +98,7 @@ export function subscribeToConversations(cb: (convos: ConversationSummary[]) => 
         unreadByCustomer: Boolean(data.unreadByCustomer),
       };
     });
-    // Firestore's orderBy would silently exclude conversations that have no
-    // messages yet (e.g. one an admin just started) since they lack the
-    // sorted field entirely — sorting client-side avoids that, and puts
-    // those brand-new empty conversations first so they're easy to open.
+
     list.sort((a, b) => {
       if (!a.lastMessageAt && !b.lastMessageAt) return 0;
       if (!a.lastMessageAt) return -1;
@@ -124,4 +127,18 @@ export function subscribeToConversation(
       unreadByAdmin: Boolean(data?.unreadByAdmin),
     });
   });
+}
+
+export async function markMessagesRead(conversationId: string, viewerRole: "customer" | "admin") {
+  const otherRole = viewerRole === "admin" ? "customer" : "admin";
+  const q = query(
+    collection(db, "conversations", conversationId, "messages"),
+    where("senderRole", "==", otherRole),
+    where("read", "==", false)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) return;
+  const batch = writeBatch(db);
+  snap.docs.forEach((d) => batch.update(d.ref, { read: true }));
+  await batch.commit();
 }

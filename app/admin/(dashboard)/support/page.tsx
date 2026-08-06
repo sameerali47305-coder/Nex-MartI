@@ -11,6 +11,7 @@ import {
   subscribeToMessages,
   sendChatMessage,
   markConversationRead,
+  markMessagesRead,
   type ConversationSummary,
   type ChatMessage,
 } from "@/lib/chat";
@@ -39,6 +40,7 @@ export default function AdminSupportPage() {
     return subscribeToMessages(activeId, (msgs) => {
       setMessages(msgs);
       markConversationRead(activeId, "admin").catch(() => {});
+      markMessagesRead(activeId, "admin").catch(() => {});
     });
   }, [activeId]);
 
@@ -184,10 +186,10 @@ export default function AdminSupportPage() {
                       >
                         {formatTime(m.createdAt)}
                         {m.senderRole === "admin" &&
-                          (active.unreadByCustomer ? (
-                            <Check size={13} />
-                          ) : (
+                          (m.read ? (
                             <CheckCheck size={13} className="text-white" />
+                          ) : (
+                            <Check size={13} />
                           ))}
                       </div>
                     </div>

@@ -10,6 +10,7 @@ import {
   subscribeToMessages,
   subscribeToConversation,
   markConversationRead,
+  markMessagesRead,
   type ChatMessage,
 } from "@/lib/chat";
 
@@ -24,15 +25,13 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const [hasUnread, setHasUnread] = useState(false);
-  const [seenByAdmin, setSeenByAdmin] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!user) return;
     ensureConversation(user.id, user.name, user.email);
-    return subscribeToConversation(user.id, ({ unreadByCustomer, unreadByAdmin }) => {
+    return subscribeToConversation(user.id, ({ unreadByCustomer }) => {
       setHasUnread(unreadByCustomer);
-      setSeenByAdmin(!unreadByAdmin);
     });
   }, [user]);
 
@@ -40,7 +39,10 @@ export default function ChatWidget() {
     if (!user) return;
     return subscribeToMessages(user.id, (msgs) => {
       setMessages(msgs);
-      if (isOpen) markConversationRead(user.id, "customer").catch(() => {});
+      if (isOpen) {
+        markConversationRead(user.id, "customer").catch(() => {});
+        markMessagesRead(user.id, "customer").catch(() => {});
+      }
     });
   }, [user, isOpen]);
 
@@ -97,7 +99,7 @@ export default function ChatWidget() {
                   >
                     {formatTime(m.createdAt)}
                     {m.senderRole === "customer" &&
-                      (seenByAdmin ? <CheckCheck size={13} /> : <Check size={13} />)}
+                      (m.read ? <CheckCheck size={13} /> : <Check size={13} />)}
                   </div>
                 </div>
               </div>
