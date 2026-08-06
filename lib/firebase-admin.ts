@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getMessaging } from "firebase-admin/messaging";
+import { getAuth } from "firebase-admin/auth";
 
 const app =
   getApps().length > 0
@@ -13,3 +14,4 @@ const app =
       });
 
 export const adminMessaging = getMessaging(app);
+export const adminAuth = getAuth(app);
