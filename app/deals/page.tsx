@@ -3,11 +3,15 @@ import { Tag, ArrowRight, Clock } from "lucide-react";
 
 import Container from "@/components/ui/Container";
 import ProductGrid from "@/components/product/ProductGrid";
+import DealsCountdown from "@/components/common/DealsCountdown";
 import { listProducts } from "@/services/product.service";
+import { getSiteSettings } from "@/services/settings.service";
 import { serializeProduct } from "@/lib/serializers";
 
 export default async function DealsPage() {
   const { products } = await listProducts({ page: 1, limit: 50 });
+  const settings = await getSiteSettings();
+
   const dealProducts = products.filter((product) => product.isSale);
   const uiDeals = dealProducts.map(serializeProduct);
 
@@ -22,12 +26,21 @@ export default async function DealsPage() {
   return (
     <main className="bg-gray-50 py-10">
       <Container>
-
         <div className="mb-4 flex items-center gap-2 text-sm text-gray-500">
-          <Link href="/" className="hover:text-blue-600">Home</Link>
+          <Link href="/" className="hover:text-blue-600">
+            Home
+          </Link>
           <span>/</span>
           <span className="font-medium text-gray-900">Deals</span>
         </div>
+
+        <DealsCountdown
+          endTime={
+            settings?.dealsEndTime
+              ? new Date(settings.dealsEndTime).toISOString()
+              : null
+          }
+        />
 
         <div className="mb-10 overflow-hidden rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 px-8 py-12 text-center text-white sm:px-16">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white/15">
@@ -37,7 +50,8 @@ export default async function DealsPage() {
             {maxDiscount > 0 ? `Up to ${maxDiscount}% Off` : "Today's Deals"}
           </h1>
           <p className="mt-3 text-white/90">
-            Limited-time discounts on selected products — grab them before they&apos;re gone.
+            Limited-time discounts on selected products — grab them before
+            they&apos;re gone.
           </p>
           {uiDeals.length > 0 && (
             <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-sm">
@@ -50,7 +64,8 @@ export default async function DealsPage() {
         {uiDeals.length > 0 ? (
           <>
             <p className="mb-4 text-sm text-gray-500">
-              {uiDeals.length} {uiDeals.length === 1 ? "deal" : "deals"} available
+              {uiDeals.length} {uiDeals.length === 1 ? "deal" : "deals"}{" "}
+              available
             </p>
             <ProductGrid products={uiDeals} />
           </>
@@ -59,9 +74,12 @@ export default async function DealsPage() {
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 text-blue-600">
               <Tag size={36} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">No Active Deals Right Now</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              No Active Deals Right Now
+            </h2>
             <p className="text-gray-500">
-              We&apos;re putting together some great discounts and limited-time offers. Check back soon!
+              We&apos;re putting together some great discounts and limited-time
+              offers. Check back soon!
             </p>
             <Link
               href="/products"
@@ -72,7 +90,6 @@ export default async function DealsPage() {
             </Link>
           </div>
         )}
-
       </Container>
     </main>
   );

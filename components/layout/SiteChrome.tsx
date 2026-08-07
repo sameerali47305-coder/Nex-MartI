@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import ChatWidget from "@/components/common/ChatWidget";
+import PromoBanner from "@/components/common/PromoBanner";
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -15,6 +16,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
 
   return (
     <>
+      <PromoBanner />
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />

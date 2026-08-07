@@ -48,7 +48,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Image wrapper with attached ref */}
       <div
         ref={imageRef}
-        className="relative h-64 overflow-hidden bg-gray-100"
+        className="relative aspect-square overflow-hidden bg-gray-100"
       >
         {product.isSale && (
           <span className="absolute left-3 top-3 z-10 rounded bg-red-500 px-2 py-1 text-xs font-semibold text-white">
@@ -83,7 +83,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-contain p-6 transition duration-300 group-hover:scale-105"
+            className="object-cover transition duration-300 group-hover:scale-105"
           />
         </Link>
       </div>

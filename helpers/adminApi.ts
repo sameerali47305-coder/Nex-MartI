@@ -229,3 +229,16 @@ export function sendPromotionalBroadcast(input: { title: string; body: string })
     body: JSON.stringify(input),
   });
 }
+
+export interface SiteSettings {
+  dealsEndTime: string | null;
+  promoBannerEnabled: boolean;
+  promoBannerMessage: string;
+}
+
+export function updateSiteSettings(input: Partial<SiteSettings>) {
+  return adminRequest<{ settings: SiteSettings }>("/api/admin/settings", {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
