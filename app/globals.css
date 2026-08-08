@@ -122,8 +122,14 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
-  }
+  @apply text-foreground;
+  background:
+    radial-gradient(1200px 500px at 15% -5%, rgba(59, 130, 246, 0.10), transparent 60%),
+    radial-gradient(1000px 480px at 100% 0%, rgba(251, 146, 60, 0.08), transparent 55%),
+    #ffffff;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
   html {
     @apply font-sans;
   }
