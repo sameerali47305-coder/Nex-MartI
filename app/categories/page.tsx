@@ -2,8 +2,13 @@ import Link from "next/link";
 
 import Container from "@/components/ui/Container";
 import CategoryGrid from "@/components/category/CategoryGrid";
+import { listCategories } from "@/services/category.service";
+import { serializeCategory } from "@/lib/serializers";
 export const revalidate = 0;
-export default function CategoriesPage() {
+export default async function CategoriesPage() {
+  const categories = await listCategories();
+  const uiCategories = categories.map(serializeCategory);
+
   return (
     <main className="bg-gray-50 py-10">
       <Container>
@@ -25,7 +30,7 @@ export default function CategoriesPage() {
           </p>
         </div>
 
-        <CategoryGrid />
+        <CategoryGrid categories={uiCategories} />
 
       </Container>
     </main>

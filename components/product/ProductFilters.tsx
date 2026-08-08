@@ -54,7 +54,7 @@ export default function ProductFilters({
   }
 
   const panel = (
-    <div className="space-y-6">
+    <div className="sticky top-24 max-h-[calc(100vh-7rem)] space-y-6 overflow-y-auto lg:w-64 lg:flex-shrink-0">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">Filters</h2>
         {activeCount > 0 && (

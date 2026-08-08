@@ -99,7 +99,7 @@ export default function Hero() {
                     fill
                     sizes="256px"
                     className="object-cover"
-                    //priority
+                    priority
                   />
                 </div>
               </div>
@@ -113,7 +113,7 @@ export default function Hero() {
                     fill
                     sizes="144px"
                     className="object-cover"
-                     // priority
+                     
                   />
                 </div>
               </div>
