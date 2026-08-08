@@ -116,7 +116,18 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
-
+@layer utilities {
+  @keyframes float-y {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  .animate-float {
+    animation: float-y 3.5s ease-in-out infinite;
+  }
+  .animate-float-slow {
+    animation: float-y 4.2s ease-in-out infinite;
+  }
+}
 @layer base {
   * {
     @apply border-border outline-ring/50;
