@@ -4,7 +4,7 @@ import Link from "next/link";
 import Container from "@/components/ui/Container";
 import { listCategories } from "@/services/category.service";
 import { serializeCategory } from "@/lib/serializers";
-
+export const revalidate = 0;
 const accentStyles = [
   "from-blue-500/10 to-blue-500/0 group-hover:from-blue-500/20",
   "from-rose-500/10 to-rose-500/0 group-hover:from-rose-500/20",
@@ -66,7 +66,7 @@ export default async function FeaturedCategories() {
                       alt={category.name}
                       fill
                       sizes="112px"
-                      className="object-contain p-4 transition duration-300 group-hover:scale-110"
+className="object-cover transition duration-300 group-hover:scale-110"
                     />
                   )}
                 </div>

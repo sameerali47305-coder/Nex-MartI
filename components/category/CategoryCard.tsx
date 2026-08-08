@@ -20,7 +20,7 @@ export default function CategoryCard({ category }: CategoryCardProps) {
             alt={category.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-contain p-8 transition duration-300 group-hover:scale-105"
+          className="object-contain transition duration-300 group-hover:scale-105"
           />
         )}
       </div>

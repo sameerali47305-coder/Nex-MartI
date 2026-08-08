@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import Container from "@/components/ui/Container";
 import CategoryGrid from "@/components/category/CategoryGrid";
-
+export const revalidate = 0;
 export default function CategoriesPage() {
   return (
     <main className="bg-gray-50 py-10">
