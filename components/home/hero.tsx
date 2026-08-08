@@ -94,11 +94,12 @@ export default function Hero() {
               <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 -rotate-3 animate-in fade-in zoom-in-90 fill-mode-both rounded-3xl bg-white p-4 shadow-2xl duration-700 delay-200">
                 <div className="relative h-full w-full overflow-hidden rounded-2xl">
                   <Image
-                    src="/products/headphone.jpeg"
+                    src="/products/hero.2.png"
                     alt="Featured headphones"
                     fill
                     sizes="256px"
                     className="object-cover"
+                    //priority
                   />
                 </div>
               </div>
@@ -107,11 +108,12 @@ export default function Hero() {
               <div className="absolute -right-4 bottom-8 h-36 w-36 rotate-6 animate-in fade-in slide-in-from-bottom-10 fill-mode-both rounded-2xl bg-white p-2.5 shadow-xl duration-700 delay-500">
                 <div className="relative h-full w-full overflow-hidden rounded-xl">
                   <Image
-                    src="/products/watch.jpeg"
+                    src="/products/hero.i.png"
                     alt="Featured watch"
                     fill
                     sizes="144px"
                     className="object-cover"
+                     // priority
                   />
                 </div>
               </div>
