@@ -13,7 +13,7 @@ export default function CategoryCard({ category }: CategoryCardProps) {
       href={`/products?category=${encodeURIComponent(category.slug)}`}
       className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
     >
-      <div className="relative h-48 overflow-hidden bg-gray-100">
+      <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
         {category.image && (
           <Image
             src={category.image}
