@@ -39,7 +39,11 @@ export async function createCheckoutSession(
       currency: "usd",
       product_data: {
         name: item.product.name,
-        images: item.product.image ? [`${origin}${item.product.image}`] : [],
+        images: item.product.image?.startsWith("data:")
+          ? [] // base64 data URIs are too long for Stripe, skip them
+          : item.product.image
+          ? [`${origin}${item.product.image}`]
+          : [],
       },
       unit_amount: Math.round(item.product.price * 100), // Stripe uses cents
     },

@@ -45,3 +45,10 @@ export function updateNotificationPreferenceRequest(enabled: boolean) {
     body: JSON.stringify({ enabled }),
   });
 }
+
+export function submitReview(input: { orderId: string; productId: string; rating: number; comment?: string }) {
+  return userRequest<null>("/api/reviews", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}

@@ -18,6 +18,7 @@ import {
 
 import Container from "@/components/ui/Container";
 import { getToken } from "@/helpers/authApi";
+import RateProductModal from "@/components/product/RateProductModal";
 
 interface OrderDetail {
   id: string;
@@ -57,6 +58,8 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [ratingItem, setRatingItem] = useState<{ productId: string; name: string } | null>(null);
+  const [ratedIds, setRatedIds] = useState<string[]>([]);
 
   useEffect(() => {
     const token = getToken();
@@ -159,10 +162,35 @@ export default function OrderDetailPage() {
                     <p className="font-semibold text-gray-900">
                       ${(item.price * item.quantity).toFixed(2)}
                     </p>
+                    {order.status === "delivered" && (
+                      ratedIds.includes(item.productId) ? (
+                        <span className="text-xs font-medium text-green-600">Rated ✓</span>
+                      ) : (
+                        <button
+                          onClick={() => setRatingItem({ productId: item.productId, name: item.name })}
+                          className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-blue-600 hover:text-blue-600"
+                        >
+                          Rate
+                        </button>
+                      )
+                    )}
                   </div>
                 ))}
               </div>
             </div>
+
+            {ratingItem && (
+              <RateProductModal
+                orderId={order.id}
+                productId={ratingItem.productId}
+                productName={ratingItem.name}
+                onClose={() => setRatingItem(null)}
+                onSubmitted={() => {
+                  setRatedIds((prev) => [...prev, ratingItem.productId]);
+                  setRatingItem(null);
+                }}
+              />
+            )}
 
             {/* Shipping + Delivery */}
             <div className="grid gap-6 sm:grid-cols-2">
