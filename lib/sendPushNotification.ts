@@ -7,7 +7,6 @@ export async function sendPushToUser(
   data?: Record<string, string>
 ) {
   const user = await User.findById(userId).select("fcmTokens notificationsEnabled");
-  console.log("PUSH DEBUG: user", userId, "has tokens:", user?.fcmTokens?.length ?? 0, "notificationsEnabled:", user?.notificationsEnabled);
 
   if (!user || !user.fcmTokens || user.fcmTokens.length === 0) return;
 
@@ -18,17 +17,6 @@ export async function sendPushToUser(
     tokens: user.fcmTokens,
     notification,
     data,
-  });
-
-  console.log(
-    "PUSH RESULT: success =", response.successCount,
-    "failure =", response.failureCount
-  );
-
-  response.responses.forEach((r, i) => {
-    if (!r.success) {
-      console.log("PUSH FAILURE detail:", user.fcmTokens[i], "->", r.error?.code, r.error?.message);
-    }
   });
 
   // Filter out ONLY tokens that FCM confirms are dead/invalid

@@ -257,7 +257,6 @@ export async function updateOrderStatus(orderId: string, input: UpdateOrderStatu
   }).catch((err) => console.error("NOTIFICATION SAVE ERROR:", err));
 
   sendPushToUser(orderUserId, { title: notifTitle, body: notifBody })
-    .then(() => console.log("PUSH: attempted send to user", orderUserId))
     .catch((err) => console.error("PUSH ERROR:", err));
 
   return { id: order._id.toString(), status: order.status };
