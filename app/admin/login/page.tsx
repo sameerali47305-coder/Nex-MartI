@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Loader2, Mail, Lock, ShieldCheck } from "lucide-react";
+import { Loader2, Mail, ShieldCheck } from "lucide-react";
 
 import Container from "@/components/ui/Container";
+import PasswordInput from "@/components/ui/PasswordInput";
 import { loginRequest } from "@/helpers/authApi";
 import { useAuth } from "@/context/AuthContext";
 
@@ -84,19 +85,14 @@ export default function AdminLoginPage() {
               <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <div className="relative">
-                <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  className="w-full rounded-lg border border-gray-300 py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                />
-              </div>
+              <PasswordInput
+                id="password"
+                name="password"
+                required
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+              />
             </div>
 
             <button

@@ -4,15 +4,22 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Loader2, Mail, Lock, User as UserIcon } from "lucide-react";
+import { Loader2, Mail, User as UserIcon } from "lucide-react";
 
 import Container from "@/components/ui/Container";
+import PasswordInput from "@/components/ui/PasswordInput";
 import { registerRequest } from "@/helpers/authApi";
+import { getPasswordError } from "@/lib/passwordValidation";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -20,14 +27,32 @@ export default function RegisterPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (form.password !== form.confirmPassword) {
+      toast.error("Passwords don't match");
+      return;
+    }
+
+    const passwordError = getPasswordError(form.password);
+    if (passwordError) {
+      toast.error(passwordError);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      await registerRequest(form);
+      await registerRequest({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      });
       toast.success("Verification code sent. Please check your inbox.");
       router.push(`/verify-otp?email=${encodeURIComponent(form.email)}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Registration failed");
+      toast.error(
+        error instanceof Error ? error.message : "Registration failed"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +62,6 @@ export default function RegisterPage() {
     <section className="flex min-h-[calc(100vh-5rem)] items-center bg-gray-50 py-12">
       <Container>
         <div className="mx-auto w-full max-w-md rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
-
           <div className="mb-8 text-center">
             <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
             <p className="mt-2 text-sm text-gray-500">
@@ -46,7 +70,6 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-
             <div>
               <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-gray-700">
                 Full Name
@@ -90,20 +113,30 @@ export default function RegisterPage() {
               <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <div className="relative">
-                <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  minLength={6}
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="At least 6 characters"
-                  className="w-full rounded-lg border border-gray-300 py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                />
-              </div>
+              <PasswordInput
+                id="password"
+                name="password"
+                required
+                minLength={8}
+                value={form.password}
+                onChange={handleChange}
+                placeholder="8+ chars, 1 uppercase, 1 number, 1 symbol"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-medium text-gray-700">
+                Confirm Password
+              </label>
+              <PasswordInput
+                id="confirmPassword"
+                name="confirmPassword"
+                required
+                minLength={8}
+                value={form.confirmPassword}
+                onChange={handleChange}
+                placeholder="Re-enter your password"
+              />
             </div>
 
             <button
@@ -114,7 +147,6 @@ export default function RegisterPage() {
               {isLoading && <Loader2 size={16} className="animate-spin" />}
               {isLoading ? "Creating account..." : "Create Account"}
             </button>
-
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-500">
@@ -123,7 +155,6 @@ export default function RegisterPage() {
               Log in
             </Link>
           </p>
-
         </div>
       </Container>
     </section>

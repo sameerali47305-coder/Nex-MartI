@@ -3,15 +3,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Loader2, User, Mail, Lock, Bell } from "lucide-react";
+import { Loader2, User, Mail, Bell } from "lucide-react";
 
 import Container from "@/components/ui/Container";
+import PasswordInput from "@/components/ui/PasswordInput";
 import { useAuth } from "@/context/AuthContext";
 import {
   updateProfileRequest,
   changePasswordRequest,
   updateNotificationPreferenceRequest,
 } from "@/helpers/userApi";
+import { getPasswordError } from "@/lib/passwordValidation";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -66,6 +68,13 @@ export default function ProfilePage() {
 
   async function handlePasswordSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    const passwordError = getPasswordError(passwordForm.newPassword);
+    if (passwordError) {
+      toast.error(passwordError);
+      return;
+    }
+
     setIsSavingPassword(true);
 
     try {
@@ -209,39 +218,29 @@ export default function ProfilePage() {
                 <label htmlFor="currentPassword" className="mb-1.5 block text-sm font-medium text-gray-700">
                   Current Password
                 </label>
-                <div className="relative">
-                  <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    id="currentPassword"
-                    name="currentPassword"
-                    type="password"
-                    required
-                    value={passwordForm.currentPassword}
-                    onChange={handlePasswordChange}
-                    placeholder="Enter your current password"
-                    className="w-full rounded-lg border border-gray-300 py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                  />
-                </div>
+                <PasswordInput
+                  id="currentPassword"
+                  name="currentPassword"
+                  required
+                  value={passwordForm.currentPassword}
+                  onChange={handlePasswordChange}
+                  placeholder="Enter your current password"
+                />
               </div>
 
               <div>
                 <label htmlFor="newPassword" className="mb-1.5 block text-sm font-medium text-gray-700">
                   New Password
                 </label>
-                <div className="relative">
-                  <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    id="newPassword"
-                    name="newPassword"
-                    type="password"
-                    required
-                    minLength={6}
-                    value={passwordForm.newPassword}
-                    onChange={handlePasswordChange}
-                    placeholder="At least 6 characters"
-                    className="w-full rounded-lg border border-gray-300 py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                  />
-                </div>
+                <PasswordInput
+                  id="newPassword"
+                  name="newPassword"
+                  required
+                  minLength={8}
+                  value={passwordForm.newPassword}
+                  onChange={handlePasswordChange}
+                  placeholder="8+ chars, 1 uppercase, 1 number, 1 symbol"
+                />
               </div>
 
               <button

@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { Loader2, Lock, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2 } from "lucide-react";
 
+import PasswordInput from "@/components/ui/PasswordInput";
 import { resetPasswordRequest, forgotPasswordRequest } from "@/helpers/authApi";
+import { getPasswordError } from "@/lib/passwordValidation";
 
 export default function ResetPasswordClient() {
   const router = useRouter();
@@ -32,6 +34,12 @@ export default function ResetPasswordClient() {
     }
     if (otp.length !== 6) {
       toast.error("Enter the full 6-digit code");
+      return;
+    }
+
+    const passwordError = getPasswordError(newPassword);
+    if (passwordError) {
+      toast.error(passwordError);
       return;
     }
 
@@ -112,19 +120,15 @@ export default function ResetPasswordClient() {
 
         <div>
           <label htmlFor="newPassword" className="mb-1.5 block text-sm font-medium text-gray-700">New Password</label>
-          <div className="relative">
-            <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              id="newPassword"
-              type="password"
-              required
-              minLength={6}
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="At least 6 characters"
-              className="w-full rounded-lg border border-gray-300 py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-            />
-          </div>
+          <PasswordInput
+            id="newPassword"
+            name="newPassword"
+            required
+            minLength={8}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="8+ chars, 1 uppercase, 1 number, 1 symbol"
+          />
         </div>
 
         <button
