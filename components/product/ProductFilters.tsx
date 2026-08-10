@@ -54,7 +54,7 @@ export default function ProductFilters({
   }
 
   const panel = (
-    <div className="sticky top-24 max-h-[calc(100vh-7rem)] space-y-6 overflow-y-auto lg:w-64 lg:flex-shrink-0">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">Filters</h2>
         {activeCount > 0 && (
@@ -119,7 +119,7 @@ export default function ProductFilters({
         )}
       </button>
 
-      <aside className="hidden w-64 shrink-0 rounded-lg border border-gray-200 bg-white p-5 shadow-sm lg:block">
+      <aside className="sticky top-24 hidden max-h-[calc(100vh-7rem)] w-64 shrink-0 overflow-y-auto rounded-lg border border-gray-200 bg-white p-5 shadow-sm lg:block">
         {panel}
       </aside>
 
@@ -127,8 +127,7 @@ export default function ProductFilters({
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setIsMobileOpen(false)} />
           <div className="absolute left-0 top-0 h-full w-72 overflow-y-auto bg-white p-5 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">Filters</h2>
+            <div className="mb-4 flex items-center justify-end">
               <button onClick={() => setIsMobileOpen(false)} aria-label="Close filters">
                 <X size={20} />
               </button>

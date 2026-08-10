@@ -100,7 +100,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Rating */}
         <div className="flex items-center gap-1">
-          {[...Array(product.rating)].map((_, index) => (
+          {[...Array(Math.min(5, Math.max(0, Math.round(product.rating || 0))))].map((_, index) => (
             <Star
               key={index}
               size={16}
