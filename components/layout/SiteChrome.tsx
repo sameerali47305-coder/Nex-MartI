@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import ChatWidget from "@/components/common/ChatWidget";
+import AiAssistantWidget from "@/components/common/AiAssistantWidget";
 import PromoBanner from "@/components/common/PromoBanner";
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
@@ -21,6 +22,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       <main className="flex-1">{children}</main>
       <Footer />
       <ChatWidget />
+      <AiAssistantWidget />
     </>
   );
 }
