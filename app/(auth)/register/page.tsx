@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -10,9 +10,11 @@ import Container from "@/components/ui/Container";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { registerRequest } from "@/helpers/authApi";
 import { getPasswordError } from "@/lib/passwordValidation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -20,6 +22,13 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      toast("You're already registered and logged in");
+      router.replace("/");
+    }
+  }, [isAuthenticated, router]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));

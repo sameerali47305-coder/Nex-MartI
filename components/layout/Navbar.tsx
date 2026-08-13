@@ -149,7 +149,7 @@ export default function Navbar() {
               >
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-1.5 rounded-lg p-2 transition hover:bg-gray-100"
+                  className="flex items-center gap-1.5 rounded-lg p-2 transition hover:bg-gray-100 cursor-pointer"
                 >
                   {/* Restored blue icon color */}
                   <User size={20} className="text-blue-600" />
@@ -212,7 +212,7 @@ export default function Navbar() {
                         setIsDropdownOpen(false);
                         handleLogout();
                       }}
-                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-red-50 hover:text-red-600"
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-red-50 hover:text-red-600 cursor-pointer"
                     >
                       <LogOut size={18} />
                       Logout
@@ -345,7 +345,7 @@ export default function Navbar() {
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-700 transition hover:border-red-500 hover:text-red-500"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-700 transition hover:border-red-500 hover:text-red-500 cursor-pointer"
                   >
                     <LogOut size={16} />
                     Logout

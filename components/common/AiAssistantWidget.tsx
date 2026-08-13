@@ -68,10 +68,10 @@ export default function AiAssistantWidget() {
   }
 
   return (
-    <div className="fixed bottom-24 right-5 z-50">
+    <div className={`fixed bottom-5 left-5 z-50 flex flex-col items-end ${isOpen ? "w-80" : ""}`}>
       {isOpen && (
-        <div className="mb-3 flex h-[30rem] w-80 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200">
-          <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 text-white">
+        <div className="mb-3 flex h-[30rem] w-80 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl animate-in fade-in slide-in-from-left-8 duration-200">
+          <div className="flex items-center justify-between bg-blue-600 px-4 py-3 text-white">
             <div className="flex items-center gap-2">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20">
                 <Sparkles size={14} />
@@ -174,10 +174,9 @@ export default function AiAssistantWidget() {
       <button
         onClick={toggleOpen}
         aria-label="Toggle AI assistant"
-        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-xl transition hover:scale-105"
-      >
-        <Sparkles size={22} />
-        {hasNew && <span className="absolute right-0 top-0 h-3 w-3 rounded-full bg-red-500 ring-2 ring-white" />}
+       className="relative flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700 cursor-pointer"      >
+        {isOpen ? <X size={22} /> : <Sparkles size={22} />}
+        {hasNew && !isOpen && <span className="absolute right-0 top-0 h-3 w-3 rounded-full bg-red-500 ring-2 ring-white" />}
       </button>
     </div>
   );

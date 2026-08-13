@@ -11,17 +11,12 @@ export class ServiceError extends Error {
   }
 }
 
-export async function updateProfile(userId: string, { name, email }: UpdateProfileInput) {
+export async function updateProfile(userId: string, { name }: UpdateProfileInput) {
   await connectDB();
-
-  const emailTaken = await User.findOne({ email, _id: { $ne: userId } });
-  if (emailTaken) {
-    throw new ServiceError("This email is already in use by another account", 409);
-  }
 
   const user = await User.findByIdAndUpdate(
     userId,
-    { name, email },
+    { name },
     { returnDocument: "after", runValidators: true }
   );
 
@@ -59,9 +54,14 @@ export async function changePassword(
 
   return { email: user.email };
 }
+
 export async function setNotificationPreference(userId: string, enabled: boolean) {
   await connectDB();
-  const user = await User.findByIdAndUpdate(userId, { notificationsEnabled: enabled }, { returnDocument: "after" });
+  const user = await User.findByIdAndUpdate(
+    userId,
+    { notificationsEnabled: enabled },
+    { returnDocument: "after" }
+  );
   if (!user) throw new ServiceError("User not found", 404);
   return { notificationsEnabled: user.notificationsEnabled };
 }

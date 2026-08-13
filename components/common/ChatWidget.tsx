@@ -62,7 +62,7 @@ export default function ChatWidget() {
   return (
     <div className="fixed bottom-5 right-5 z-50">
       {isOpen && (
-        <div className="mb-3 flex h-[28rem] w-80 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+        <div className="mb-3 flex h-[28rem] w-80 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl animate-in fade-in slide-in-from-right-8 duration-200">
           <div className="flex items-center justify-between bg-blue-600 px-4 py-3 text-white">
             <div className="flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15">
@@ -127,7 +127,7 @@ export default function ChatWidget() {
 
       <button
         onClick={() => setIsOpen((o) => !o)}
-        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700"
+className="relative flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700 cursor-pointer"
       >
         {isOpen ? <X size={22} /> : <MessageCircle size={22} />}
         {!isOpen && hasUnread && (

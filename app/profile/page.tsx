@@ -158,9 +158,9 @@ export default function ProfilePage() {
                     name="email"
                     type="email"
                     required
+                    disabled
                     value={profileForm.email}
-                    onChange={handleProfileChange}
-                    className="w-full rounded-lg border border-gray-300 py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    className="w-full cursor-not-allowed rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-11 pr-4 text-sm text-gray-500 outline-none"
                   />
                 </div>
               </div>

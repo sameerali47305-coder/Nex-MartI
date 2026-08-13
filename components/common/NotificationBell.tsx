@@ -84,7 +84,7 @@ export default function NotificationBell() {
     <div ref={ref} className="relative inline-flex">
       <button
         onClick={() => setIsOpen((o) => !o)}
-        className="relative inline-flex items-center justify-center rounded-lg p-2 text-gray-700 transition hover:text-blue-600"
+        className="relative inline-flex items-center justify-center rounded-lg p-2 text-gray-700 transition hover:text-blue-600 cursor-pointer"
       >
         <Bell size={20} />
         {unreadCount > 0 && (

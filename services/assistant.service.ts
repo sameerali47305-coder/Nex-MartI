@@ -73,7 +73,7 @@ async function listCategoryNames() {
 async function getCatalogContext() {
   await connectDB();
 
-  const [categories, saleItems, newItems, settings] = await Promise.all([
+  const [categories, saleItems, newItems, settings, sampleProducts] = await Promise.all([
     Category.aggregate([
       { $lookup: { from: "products", localField: "_id", foreignField: "category", as: "products" } },
       { $project: { name: 1, count: { $size: "$products" } } },
@@ -81,6 +81,7 @@ async function getCatalogContext() {
     Product.find({ isSale: true }).limit(10).select("name price oldPrice stock").populate("category", "name"),
     Product.find({ isNewArrival: true }).limit(10).select("name price stock").populate("category", "name"),
     SiteSettings.findOne(),
+    Product.find().limit(30).select("name price stock").populate("category", "name"),
   ]);
 
   return {
@@ -89,6 +90,8 @@ async function getCatalogContext() {
     onSale: saleItems.map((p) => ({ name: p.name, price: p.price, oldPrice: p.oldPrice, category: (p.category as any)?.name })),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     newArrivals: newItems.map((p) => ({ name: p.name, price: p.price, category: (p.category as any)?.name })),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    allProducts: sampleProducts.map((p) => ({ name: p.name, price: p.price, category: (p.category as any)?.name })),
     activePromo: settings?.promoBannerEnabled ? settings.promoBannerMessage : null,
     dealsEndTime: settings?.dealsEndTime ?? null,
   };
@@ -120,6 +123,7 @@ Available categories: ${categories.join(", ") || "none"}
 Products currently ON SALE: ${JSON.stringify(catalog.onSale)}
 New arrivals: ${JSON.stringify(catalog.newArrivals)}
 Category breakdown: ${catalog.categories.join(", ")}
+Full product catalog (name/price/category — use this for general questions like "list your products" or "what's in X category"): ${JSON.stringify(catalog.allProducts)}
 ${catalog.activePromo ? `Active site-wide promo: "${catalog.activePromo}"` : "No active site-wide promo right now."}
 ${catalog.dealsEndTime ? `Deals countdown ends: ${new Date(catalog.dealsEndTime).toLocaleString()}` : ""}
 
