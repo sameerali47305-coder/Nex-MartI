@@ -14,6 +14,7 @@ import {
   X,
   Package,
   ChevronDown,
+  ShieldCheck,
 } from "lucide-react";
 
 import Container from "@/components/ui/Container";
@@ -151,7 +152,6 @@ export default function Navbar() {
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center gap-1.5 rounded-lg p-2 transition hover:bg-gray-100 cursor-pointer"
                 >
-                  {/* Restored blue icon color */}
                   <User size={20} className="text-blue-600" />
 
                   <span className="text-sm font-medium text-gray-800">
@@ -204,6 +204,17 @@ export default function Navbar() {
                       <ShoppingCart size={18} />
                       Cart
                     </Link>
+
+                    {user?.role === "admin" && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-blue-600 hover:bg-blue-50"
+                      >
+                        <ShieldCheck size={18} />
+                        Admin Portal
+                      </Link>
+                    )}
 
                     <hr className="border-gray-100" />
 
@@ -335,6 +346,18 @@ export default function Navbar() {
                     <User size={18} className="text-blue-600" />
                     {user?.name}
                   </p>
+
+                  {user?.role === "admin" && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-50 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-100"
+                    >
+                      <ShieldCheck size={16} />
+                      Admin Portal
+                    </Link>
+                  )}
+
                   <Link
                     href="/profile"
                     onClick={() => setIsMenuOpen(false)}

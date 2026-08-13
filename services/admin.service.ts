@@ -42,9 +42,26 @@ export async function updateUser(
     throw new ServiceError("You cannot change your own role", 400);
   }
 
-  const update: Partial<{ name: string; email: string; role: "customer" | "admin" }> = {};
+  const existingUser = await User.findById(targetUserId);
+  if (!existingUser) {
+    throw new ServiceError("User not found", 404);
+  }
+
+  const update: Partial<{
+    name: string;
+    email: string;
+    role: "customer" | "admin";
+    isVerified: boolean;
+  }> = {};
+
   if (input.name !== undefined) update.name = input.name;
-  if (input.email !== undefined) update.email = input.email;
+  if (input.email !== undefined) {
+    update.email = input.email;
+    // Reset verification state if email address actually changed
+    if (input.email !== existingUser.email) {
+      update.isVerified = false;
+    }
+  }
   if (input.role !== undefined) update.role = input.role;
 
   let user;
@@ -54,7 +71,12 @@ export async function updateUser(
       runValidators: true,
     });
   } catch (error: unknown) {
-    if (typeof error === "object" && error !== null && "code" in error && (error as { code?: number }).code === 11000) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code?: number }).code === 11000
+    ) {
       throw new ServiceError("That email is already in use", 409);
     }
     throw error;
@@ -64,7 +86,13 @@ export async function updateUser(
     throw new ServiceError("User not found", 404);
   }
 
-  return { id: user._id.toString(), name: user.name, email: user.email, role: user.role };
+  return {
+    id: user._id.toString(),
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    isVerified: user.isVerified,
+  };
 }
 
 export async function deleteUser(adminUserId: string, targetUserId: string) {
@@ -89,29 +117,34 @@ export async function getDashboardStats() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
   sevenDaysAgo.setHours(0, 0, 0, 0);
 
-  const [totalUsers, totalOrders, totalProducts, revenueResult, recentOrders, dailyRevenue, statusCounts] =
-    await Promise.all([
-      User.countDocuments(),
-      Order.countDocuments(),
-      Product.countDocuments(),
-      Order.aggregate([
-        { $match: { status: { $ne: "cancelled" } } },
-        { $group: { _id: null, total: { $sum: "$total" } } },
-      ]),
-      Order.find().sort({ createdAt: -1 }).limit(5).populate("user", "name email"),
-      Order.aggregate([
-        { $match: { status: { $ne: "cancelled" }, createdAt: { $gte: sevenDaysAgo } } },
-        {
-          $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-            total: { $sum: "$total" },
-          },
+  const [
+    totalUsers,
+    totalOrders,
+    totalProducts,
+    revenueResult,
+    recentOrders,
+    dailyRevenue,
+    statusCounts,
+  ] = await Promise.all([
+    User.countDocuments(),
+    Order.countDocuments(),
+    Product.countDocuments(),
+    Order.aggregate([
+      { $match: { status: { $ne: "cancelled" } } },
+      { $group: { _id: null, total: { $sum: "$total" } } },
+    ]),
+    Order.find().sort({ createdAt: -1 }).limit(5).populate("user", "name email"),
+    Order.aggregate([
+      { $match: { status: { $ne: "cancelled" }, createdAt: { $gte: sevenDaysAgo } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          total: { $sum: "$total" },
         },
-      ]),
-      Order.aggregate([
-        { $group: { _id: "$status", count: { $sum: 1 } } },
-      ]),
-    ]);
+      },
+    ]),
+    Order.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
+  ]);
 
   // Fill in every one of the last 7 days, even ones with $0, so the chart
   // always shows a consistent 7-bar shape instead of skipping empty days.

@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 
+import { useAuth } from "@/context/AuthContext";
 import {
   fetchUsers,
   updateUser,
@@ -22,6 +23,7 @@ import {
 } from "@/helpers/adminApi";
 
 export default function AdminUsersPage() {
+  const { user: currentAdmin } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -72,14 +74,12 @@ export default function AdminUsersPage() {
 
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [editName, setEditName] = useState("");
-  const [editEmail, setEditEmail] = useState("");
   const [editRole, setEditRole] = useState<"customer" | "admin">("customer");
   const [isSaving, setIsSaving] = useState(false);
 
   function openEditModal(user: AdminUser) {
     setEditingUser(user);
     setEditName(user.name);
-    setEditEmail(user.email);
     setEditRole(user.role);
   }
 
@@ -92,20 +92,14 @@ export default function AdminUsersPage() {
     if (!editingUser) return;
 
     const name = editName.trim();
-    const email = editEmail.trim();
 
     if (!name) {
       toast.error("Name cannot be empty");
       return;
     }
-    if (!email) {
-      toast.error("Email cannot be empty");
-      return;
-    }
 
-    const payload: { name?: string; email?: string; role?: "customer" | "admin" } = {};
+    const payload: { name?: string; role?: "customer" | "admin" } = {};
     if (name !== editingUser.name) payload.name = name;
-    if (email !== editingUser.email) payload.email = email;
     if (editRole !== editingUser.role) payload.role = editRole;
 
     if (Object.keys(payload).length === 0) {
@@ -184,7 +178,7 @@ export default function AdminUsersPage() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value as "all" | "customer" | "admin")}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-600"
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-600 cursor-pointer"
             >
               <option value="all">All Roles</option>
               <option value="customer">User</option>
@@ -209,57 +203,61 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody>
-              {visibleUsers.map((user) => (
-                <tr key={user.id} className="border-b border-gray-50">
-                  <td className="px-5 py-3">
-                    <p className="font-medium text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                  </td>
-                  <td className="px-5 py-3">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase ${
-                        user.role === "admin"
-                          ? "bg-purple-100 text-purple-700"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      {user.role === "admin" ? "Admin" : "User"}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3">
-                    {user.isVerified ? (
-                      <Check size={16} className="text-green-600" />
-                    ) : (
-                      <span className="text-gray-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3 text-gray-500">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-5 py-3 font-medium text-gray-900">{user.orderCount}</td>
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => openEditModal(user)}
-                        disabled={busyId === user.id}
-                        title="Edit user"
-                        className="flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:border-blue-600 hover:text-blue-600 disabled:opacity-50"
+              {visibleUsers.map((user) => {
+                const isSelf = user.id === currentAdmin?.id;
+
+                return (
+                  <tr key={user.id} className="border-b border-gray-50">
+                    <td className="px-5 py-3">
+                      <p className="font-medium text-gray-900">{user.name}</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                    </td>
+                    <td className="px-5 py-3">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase ${
+                          user.role === "admin"
+                            ? "bg-purple-100 text-purple-700"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
                       >
-                        <PencilLine size={14} />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user)}
-                        disabled={busyId === user.id}
-                        title="Delete user"
-                        className="flex items-center justify-center rounded-full border border-red-200 p-1.5 text-red-500 transition hover:bg-red-50 disabled:opacity-50"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {user.role === "admin" ? "Admin" : "User"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3">
+                      {user.isVerified ? (
+                        <Check size={16} className="text-green-600" />
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3 text-gray-500">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-5 py-3 font-medium text-gray-900">{user.orderCount}</td>
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openEditModal(user)}
+                          disabled={busyId === user.id}
+                          title="Edit user"
+                          className="flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:border-blue-600 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"
+                        >
+                          <PencilLine size={14} />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user)}
+                          disabled={busyId === user.id || isSelf}
+                          title={isSelf ? "You cannot delete your own account" : "Delete user"}
+                          className="flex items-center justify-center rounded-full border border-red-200 p-1.5 text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
 
@@ -268,7 +266,7 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:opacity-40"
+                className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:opacity-40 cursor-pointer"
               >
                 <ChevronLeft size={16} />
                 Prev
@@ -279,7 +277,7 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:opacity-40"
+                className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:opacity-40 cursor-pointer"
               >
                 Next
                 <ChevronRight size={16} />
@@ -306,7 +304,7 @@ export default function AdminUsersPage() {
               <h2 className="text-lg font-bold text-gray-900">Edit User</h2>
               <button
                 onClick={closeEditModal}
-                className="rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+                className="rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -327,9 +325,10 @@ export default function AdminUsersPage() {
                 <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
                 <input
                   type="email"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-600"
+                  value={editingUser.email}
+                  disabled
+                  readOnly
+                  className="w-full cursor-not-allowed rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 outline-none"
                 />
               </div>
 
@@ -338,7 +337,7 @@ export default function AdminUsersPage() {
                 <select
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value as "customer" | "admin")}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-600"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-600 cursor-pointer"
                 >
                   <option value="customer">User</option>
                   <option value="admin">Admin</option>
@@ -350,14 +349,14 @@ export default function AdminUsersPage() {
               <button
                 onClick={closeEditModal}
                 disabled={isSaving}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveEdit}
                 disabled={isSaving}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
               >
                 {isSaving && <Loader2 size={14} className="animate-spin" />}
                 Save Changes
