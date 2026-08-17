@@ -14,8 +14,9 @@ import {
   LogOut,
   ArrowLeftCircle,
   Loader2,
-   Megaphone,
-   MessageSquare,
+  Megaphone,
+  MessageSquare,
+  MessageSquareText,
 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
@@ -30,6 +31,7 @@ const navLinks = [
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/promotions", label: "Promotions", icon: Megaphone },
   { href: "/admin/support", label: "Support", icon: MessageSquare },
+  { href: "/admin/reviews", label: "Reviews", icon: MessageSquareText },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

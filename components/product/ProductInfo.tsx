@@ -16,7 +16,7 @@ export default function ProductInfo({
   product,
 }: ProductInfoProps) {
   const [quantity, setQuantity] = useState(1);
-const { addToCart } = useCart();
+  const { addToCart } = useCart();
   const { toggleWishlist, removeFromWishlist, isWishlisted } = useWishlist();
   const wishlisted = isWishlisted(product.id);
 
@@ -29,7 +29,8 @@ const { addToCart } = useCart();
   const decrease = () => {
     setQuantity((prev) => Math.max(1, prev - 1));
   };
-const handleAddToCart = async () => {
+
+  const handleAddToCart = async () => {
     const added = await addToCart(product, quantity);
 
     // Moving an item into the cart should take it off the wishlist —
@@ -56,11 +57,11 @@ const handleAddToCart = async () => {
       <div className="flex items-center gap-2">
 
         <div className="flex">
-          {[...Array(product.rating)].map((_, index) => (
+          {[1, 2, 3, 4, 5].map((n) => (
             <Star
-              key={index}
+              key={n}
               size={18}
-              className="fill-yellow-400 text-yellow-400"
+              className={n <= Math.round(product.rating || 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
             />
           ))}
         </div>

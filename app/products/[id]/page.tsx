@@ -4,10 +4,13 @@ import { notFound } from "next/navigation";
 import Container from "@/components/ui/Container";
 import ProductGallery from "@/components/product/ProductGallery";
 import ProductInfo from "@/components/product/ProductInfo";
+import ProductReviews from "@/components/product/ProductReviews";
 import RelatedProducts from "@/components/product/RelatedProducts";
 
 import { getProductById, ServiceError } from "@/services/product.service";
 import { serializeProduct } from "@/lib/serializers";
+
+export const revalidate = 0;
 
 interface ProductDetailsPageProps {
   params: Promise<{
@@ -53,6 +56,8 @@ export default async function ProductDetailsPage({
 
           <ProductInfo product={product} />
         </section>
+
+        <ProductReviews productId={product.id} />
 
         <RelatedProducts
           categorySlug={product.categorySlug}

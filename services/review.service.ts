@@ -12,6 +12,90 @@ export class ServiceError extends Error {
   }
 }
 
+async function recomputeProductRating(productId: string) {
+  const productObjectId = new mongoose.Types.ObjectId(productId);
+  const stats = await Review.aggregate([
+    { $match: { product: productObjectId } },
+    { $group: { _id: "$product", avg: { $avg: "$rating" }, count: { $sum: 1 } } },
+  ]);
+  const { avg = 0, count = 0 } = stats[0] ?? {};
+  await Product.findByIdAndUpdate(productId, {
+    rating: Math.round(avg * 10) / 10,
+    reviews: count,
+  });
+}
+
+export async function getProductReviews(productId: string) {
+  await connectDB();
+  const reviews = await Review.find({ product: productId })
+    .sort({ createdAt: -1 })
+    .populate("user", "name");
+
+  return reviews.map((r) => ({
+    id: r._id.toString(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    userId: (r.user as any)?._id?.toString() ?? "",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    userName: (r.user as any)?.name ?? "Deleted user",
+    rating: r.rating,
+    comment: r.comment,
+    createdAt: r.createdAt,
+  }));
+}
+
+export async function updateReview(
+  userId: string,
+  reviewId: string,
+  input: { rating: number; comment?: string }
+) {
+  await connectDB();
+  const review = await Review.findById(reviewId);
+  if (!review || review.user.toString() !== userId) {
+    throw new ServiceError("Review not found", 404);
+  }
+
+  review.rating = input.rating;
+  review.comment = input.comment ?? "";
+  await review.save();
+  await recomputeProductRating(review.product.toString());
+
+  return { success: true };
+}
+
+export async function deleteReview(userId: string, reviewId: string, isAdmin = false) {
+  await connectDB();
+  const review = await Review.findById(reviewId);
+  if (!review || (!isAdmin && review.user.toString() !== userId)) {
+    throw new ServiceError("Review not found", 404);
+  }
+
+  await review.deleteOne();
+  await recomputeProductRating(review.product.toString());
+
+  return { success: true };
+}
+
+export async function listAllReviews() {
+  await connectDB();
+  const reviews = await Review.find()
+    .sort({ createdAt: -1 })
+    .populate("user", "name email")
+    .populate("product", "name");
+
+  return reviews.map((r) => ({
+    id: r._id.toString(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    userName: (r.user as any)?.name ?? "Deleted user",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    userEmail: (r.user as any)?.email ?? "",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    productName: (r.product as any)?.name ?? "Deleted product",
+    rating: r.rating,
+    comment: r.comment,
+    createdAt: r.createdAt,
+  }));
+}
+
 export async function createReview(
   userId: string,
   input: { orderId: string; productId: string; rating: number; comment?: string }
@@ -45,16 +129,7 @@ export async function createReview(
     throw error;
   }
 
-  const productObjectId = new mongoose.Types.ObjectId(input.productId);
-  const stats = await Review.aggregate([
-    { $match: { product: productObjectId } },
-    { $group: { _id: "$product", avg: { $avg: "$rating" }, count: { $sum: 1 } } },
-  ]);
-  const { avg = input.rating, count = 1 } = stats[0] ?? {};
-  await Product.findByIdAndUpdate(input.productId, {
-    rating: Math.round(avg * 10) / 10,
-    reviews: count,
-  });
+  await recomputeProductRating(input.productId);
 
   return { success: true };
 }

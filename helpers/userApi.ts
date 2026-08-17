@@ -52,3 +52,18 @@ export function submitReview(input: { orderId: string; productId: string; rating
     body: JSON.stringify(input),
   });
 }
+
+export function fetchProductReviews(productId: string) {
+  return fetch(`/api/reviews?productId=${productId}`).then((r) => r.json());
+}
+
+export function updateReviewRequest(reviewId: string, input: { rating: number; comment?: string }) {
+  return userRequest<null>(`/api/reviews/${reviewId}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteReviewRequest(reviewId: string) {
+  return userRequest<null>(`/api/reviews/${reviewId}`, { method: "DELETE" });
+}

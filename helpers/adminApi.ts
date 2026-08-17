@@ -242,3 +242,11 @@ export function updateSiteSettings(input: Partial<SiteSettings>) {
     body: JSON.stringify(input),
   });
 }
+
+export function fetchAllReviews() {
+  return adminRequest<{ reviews: { id: string; userName: string; userEmail: string; productName: string; rating: number; comment: string; createdAt: string }[] }>("/api/admin/reviews");
+}
+
+export function adminDeleteReview(reviewId: string) {
+  return adminRequest<null>(`/api/admin/reviews/${reviewId}`, { method: "DELETE" });
+}
