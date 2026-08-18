@@ -25,6 +25,7 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
   const [hasUnread, setHasUnread] = useState(false);
+  const [error, setError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,8 +56,13 @@ export default function ChatWidget() {
   async function handleSend() {
     const trimmed = text.trim();
     if (!trimmed || !user) return;
+    setError("");
     setText("");
-    await sendChatMessage(user.id, user.id, "customer", trimmed);
+    try {
+      await sendChatMessage(user.id, user.id, "customer", trimmed);
+    } catch {
+      setError("Message failed to send. Please try again.");
+    }
   }
 
   return (
@@ -70,7 +76,10 @@ export default function ChatWidget() {
               </span>
               <div>
                 <p className="text-sm font-semibold">NexMart Support</p>
-                <p className="text-xs text-blue-100">We typically reply in minutes</p>
+                <p className="flex items-center gap-1 text-xs text-blue-100">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                  Online • We reply in minutes
+                </p>
               </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="rounded-full p-1 hover:bg-white/10">
@@ -104,6 +113,16 @@ export default function ChatWidget() {
                 </div>
               </div>
             ))}
+            {error && (
+              <div className="flex items-end gap-1.5">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-500">
+                  <User size={12} />
+                </span>
+                <div className="max-w-[78%] rounded-2xl rounded-bl-sm border border-red-100 bg-red-50 px-3.5 py-2 text-sm text-red-600 shadow-sm">
+                  {error}
+                </div>
+              </div>
+            )}
             <div ref={bottomRef} />
           </div>
 
@@ -127,7 +146,7 @@ export default function ChatWidget() {
 
       <button
         onClick={() => setIsOpen((o) => !o)}
-className="relative flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700 cursor-pointer"
+        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700 cursor-pointer"
       >
         {isOpen ? <X size={22} /> : <MessageCircle size={22} />}
         {!isOpen && hasUnread && (

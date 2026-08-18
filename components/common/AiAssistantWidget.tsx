@@ -39,6 +39,9 @@ export default function AiAssistantWidget() {
     setText("");
     setIsLoading(true);
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
     try {
       const token = getToken();
       const res = await fetch("/api/assistant", {
@@ -48,7 +51,9 @@ export default function AiAssistantWidget() {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ message: trimmed, history: messages.slice(-10) }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || "Something went wrong");
@@ -56,7 +61,14 @@ export default function AiAssistantWidget() {
       setMessages([...nextMessages, { role: "model", text: body.data.reply }]);
       if (!isOpen) setHasNew(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to get a response");
+      clearTimeout(timeout);
+      setError(
+        err instanceof Error && err.name === "AbortError"
+          ? "That took too long — please try again."
+          : err instanceof Error
+          ? err.message
+          : "Failed to get a response"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +90,10 @@ export default function AiAssistantWidget() {
               </span>
               <div>
                 <p className="text-sm font-semibold leading-tight">NexMart Assistant</p>
-                <p className="text-[10px] text-blue-100">Online • Powered by Gemini</p>
+                <p className="flex items-center gap-1 text-[10px] text-blue-100">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                  Online • AI Assistant
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -141,7 +156,16 @@ export default function AiAssistantWidget() {
                 </div>
               </div>
             )}
-            {error && <p className="text-center text-xs text-red-500">{error}</p>}
+            {error && (
+              <div className="flex items-end gap-1.5">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-500">
+                  <Sparkles size={12} />
+                </span>
+                <div className="max-w-[78%] rounded-2xl rounded-bl-sm border border-red-100 bg-red-50 px-3.5 py-2 text-sm text-red-600 shadow-sm">
+                  {error}
+                </div>
+              </div>
+            )}
             <div ref={bottomRef} />
           </div>
 
@@ -155,7 +179,7 @@ export default function AiAssistantWidget() {
                   sendText(text);
                 }
               }}
-              placeholder="Ask something..."
+              placeholder="Ask about a product..."
               disabled={isLoading}
               rows={1}
               className="max-h-24 flex-1 resize-none rounded-2xl border border-gray-200 px-3.5 py-2 text-sm outline-none focus:border-blue-600 disabled:opacity-60"
@@ -168,13 +192,17 @@ export default function AiAssistantWidget() {
               <Send size={15} />
             </button>
           </div>
+          <p className="border-t border-gray-50 py-1.5 text-center text-[10px] text-gray-400">
+            AI replies may not be 100% accurate
+          </p>
         </div>
       )}
 
       <button
         onClick={toggleOpen}
         aria-label="Toggle AI assistant"
-       className="relative flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700 cursor-pointer"      >
+        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700 cursor-pointer"
+      >
         {isOpen ? <X size={22} /> : <Sparkles size={22} />}
         {hasNew && !isOpen && <span className="absolute right-0 top-0 h-3 w-3 rounded-full bg-red-500 ring-2 ring-white" />}
       </button>
