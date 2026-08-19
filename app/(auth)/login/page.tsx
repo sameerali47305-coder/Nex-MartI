@@ -8,6 +8,7 @@ import { Loader2, Mail } from "lucide-react";
 
 import Container from "@/components/ui/Container";
 import PasswordInput from "@/components/ui/PasswordInput";
+import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
 import { loginRequest } from "@/helpers/authApi";
 import { useAuth } from "@/context/AuthContext";
 
@@ -110,6 +111,14 @@ export default function LoginPage() {
             </button>
 
           </form>
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-gray-200" />
+            <span className="text-xs uppercase tracking-wide text-gray-400">Or</span>
+            <div className="h-px flex-1 bg-gray-200" />
+          </div>
+
+          <GoogleLoginButton mode="login" />
 
           <p className="mt-6 text-center text-sm text-gray-500">
             Don&apos;t have an account?{" "}

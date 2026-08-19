@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { FlyToCartProvider } from "@/components/common/FlyToCart";
+import GoogleAuthProvider from "@/components/auth/GoogleAuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,14 +39,16 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <FlyToCartProvider>
-          <AuthProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <SiteChrome>{children}</SiteChrome>
-                <Toaster position="top-center" />
-              </WishlistProvider>
-            </CartProvider>
-          </AuthProvider>
+          <GoogleAuthProvider>
+            <AuthProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  <SiteChrome>{children}</SiteChrome>
+                  <Toaster position="top-center" />
+                </WishlistProvider>
+              </CartProvider>
+            </AuthProvider>
+          </GoogleAuthProvider>
         </FlyToCartProvider>
       </body>
     </html>

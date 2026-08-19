@@ -9,7 +9,7 @@ import User from "@/models/User";
 export const GET = withAuth(async (_req: NextRequest, authUser) => {
   await connectDB();
 
-  const user = await User.findById(authUser.userId);
+  const user = await User.findById(authUser.userId).select("+googleId");
   if (!user) {
     return NextResponse.json(
       { success: false, message: "User not found" },
@@ -27,6 +27,8 @@ export const GET = withAuth(async (_req: NextRequest, authUser) => {
         role: user.role,
         isVerified: user.isVerified,
         notificationsEnabled: user.notificationsEnabled,
+        avatar: user.avatar,
+        googleLinked: Boolean(user.googleId),
       },
     },
   });

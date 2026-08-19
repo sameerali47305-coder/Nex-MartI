@@ -67,3 +67,10 @@ export function updateReviewRequest(reviewId: string, input: { rating: number; c
 export function deleteReviewRequest(reviewId: string) {
   return userRequest<null>(`/api/reviews/${reviewId}`, { method: "DELETE" });
 }
+
+export function linkGoogleRequest(credential: string) {
+  return userRequest<{ avatar?: string }>("/api/auth/google/link", {
+    method: "POST",
+    body: JSON.stringify({ credential }),
+  });
+}

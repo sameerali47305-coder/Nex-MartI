@@ -86,3 +86,10 @@ export function getToken(): string | null {
 export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
+
+export function googleAuthRequest(credential: string, allowCreate: boolean = true) {
+  return apiRequest<{ token: string; user: { id: string; name: string; email: string; role: string; avatar?: string } }>(
+    "/api/auth/google",
+    { method: "POST", body: JSON.stringify({ credential, allowCreate }) }
+  );
+}

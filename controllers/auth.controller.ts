@@ -7,6 +7,7 @@ import {
   resendOtpSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  googleAuthSchema,
 } from "@/validations/auth";
 import {
   registerUser,
@@ -15,8 +16,11 @@ import {
   loginUser,
   forgotPassword,
   resetPassword,
+  loginOrRegisterWithGoogle,
+  linkGoogleAccount,
   AuthError,
 } from "@/services/auth.service";
+import { withAuth } from "@/middleware/auth";
 
 export async function registerController(req: NextRequest) {
   try {
@@ -159,6 +163,42 @@ export async function resetPasswordController(req: NextRequest) {
     return handleAuthError(error, "Failed to reset password.");
   }
 }
+
+export async function googleAuthController(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const parsed = googleAuthSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, message: parsed.error.issues[0].message }, { status: 400 });
+    }
+    const { token, user } = await loginOrRegisterWithGoogle(parsed.data.credential, parsed.data.allowCreate);
+    return NextResponse.json({ success: true, message: "Signed in with Google.", data: { token, user } });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ success: false, message: error.message }, { status: error.status });
+    }
+    console.error("Google auth error:", error);
+    return NextResponse.json({ success: false, message: "Google sign-in failed. Please try again." }, { status: 500 });
+  }
+}
+
+export const linkGoogleController = withAuth(async (req: NextRequest, user) => {
+  try {
+    const body = await req.json();
+    const parsed = googleAuthSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, message: parsed.error.issues[0].message }, { status: 400 });
+    }
+    const result = await linkGoogleAccount(user.userId, parsed.data.credential);
+    return NextResponse.json({ success: true, message: "Google account linked.", data: result });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ success: false, message: error.message }, { status: error.status });
+    }
+    console.error("Google link error:", error);
+    return NextResponse.json({ success: false, message: "Failed to link Google account." }, { status: 500 });
+  }
+});
 
 function handleAuthError(error: unknown, fallbackMessage: string) {
   if (error instanceof AuthError) {

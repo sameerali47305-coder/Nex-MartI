@@ -41,3 +41,10 @@ export const resetPasswordSchema = z.object({
 });
 
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+export const googleAuthSchema = z.object({
+  credential: z.string().min(10, "Missing Google credential"),
+  allowCreate: z.boolean().optional().default(true),
+});
+
+export type GoogleAuthInput = z.infer<typeof googleAuthSchema>;

@@ -8,6 +8,7 @@ import { Loader2, Mail, User as UserIcon } from "lucide-react";
 
 import Container from "@/components/ui/Container";
 import PasswordInput from "@/components/ui/PasswordInput";
+import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
 import { registerRequest } from "@/helpers/authApi";
 import { getPasswordError } from "@/lib/passwordValidation";
 import { useAuth } from "@/context/AuthContext";
@@ -157,6 +158,14 @@ export default function RegisterPage() {
               {isLoading ? "Creating account..." : "Create Account"}
             </button>
           </form>
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-gray-200" />
+            <span className="text-xs uppercase tracking-wide text-gray-400">Or</span>
+            <div className="h-px flex-1 bg-gray-200" />
+          </div>
+
+          <GoogleLoginButton />
 
           <p className="mt-6 text-center text-sm text-gray-500">
             Already have an account?{" "}

@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { generateToken } from "@/lib/jwt";
 import { sendOtpEmail, sendPasswordResetOtp } from "@/lib/sendEmail";
+import { verifyGoogleToken } from "@/lib/googleAuth";
 import type {
   RegisterInput,
   LoginInput,
@@ -193,4 +194,68 @@ export async function resetPassword({ email, otp, newPassword }: ResetPasswordIn
   await user.save();
 
   return { email: user.email };
+}
+
+export async function loginOrRegisterWithGoogle(idToken: string, allowCreate: boolean = true) {
+  await connectDB();
+  const profile = await verifyGoogleToken(idToken);
+
+  let user = await User.findOne({ googleId: profile.googleId });
+
+  if (!user) {
+    user = await User.findOne({ email: profile.email });
+    if (user) {
+      user.googleId = profile.googleId;
+      if (!user.avatar) user.avatar = profile.avatar;
+      user.isVerified = true;
+      await user.save();
+    } else {
+      if (!allowCreate) {
+        throw new AuthError("No account found with this email. Please sign up first.", 404);
+      }
+      user = await User.create({
+        name: profile.name,
+        email: profile.email,
+        googleId: profile.googleId,
+        avatar: profile.avatar,
+        isVerified: true,
+      });
+    }
+  }
+
+  const token = generateToken({ userId: user._id.toString(), email: user.email, role: user.role });
+
+  return {
+    token,
+    user: {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      googleLinked: true,
+    },
+  };
+}
+
+export async function linkGoogleAccount(userId: string, idToken: string) {
+  await connectDB();
+  const profile = await verifyGoogleToken(idToken);
+
+  const takenBy = await User.findOne({ googleId: profile.googleId });
+  if (takenBy && takenBy._id.toString() !== userId) {
+    throw new AuthError("This Google account is already linked to another user", 409);
+  }
+
+  const currentUser = await User.findById(userId);
+  if (!currentUser) throw new AuthError("User not found", 404);
+  if (profile.email !== currentUser.email) {
+    throw new AuthError("This Google account's email doesn't match your account email", 400);
+  }
+
+  currentUser.googleId = profile.googleId;
+  if (!currentUser.avatar) currentUser.avatar = profile.avatar;
+  await currentUser.save();
+
+  return { success: true, avatar: currentUser.avatar };
 }
