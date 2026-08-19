@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -23,9 +23,10 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   });
+  const justLoggedIn = useRef(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !justLoggedIn.current) {
       toast("You're already registered and logged in");
       router.replace("/");
     }
@@ -165,7 +166,11 @@ export default function RegisterPage() {
             <div className="h-px flex-1 bg-gray-200" />
           </div>
 
-          <GoogleLoginButton />
+          <GoogleLoginButton
+            onBeforeLogin={() => {
+              justLoggedIn.current = true;
+            }}
+          />
 
           <p className="mt-6 text-center text-sm text-gray-500">
             Already have an account?{" "}

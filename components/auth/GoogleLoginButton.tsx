@@ -11,9 +11,14 @@ import { useAuth } from "@/context/AuthContext";
 interface GoogleLoginButtonProps {
   mode?: "auth" | "login" | "link";
   onLinked?: () => void;
+  onBeforeLogin?: () => void;
 }
 
-export default function GoogleLoginButton({ mode = "auth", onLinked }: GoogleLoginButtonProps) {
+export default function GoogleLoginButton({
+  mode = "auth",
+  onLinked,
+  onBeforeLogin,
+}: GoogleLoginButtonProps) {
   const router = useRouter();
   const { login } = useAuth();
 
@@ -31,8 +36,12 @@ export default function GoogleLoginButton({ mode = "auth", onLinked }: GoogleLog
         return;
       }
 
-      const res = await googleAuthRequest(credentialResponse.credential, mode !== "login");
+      const res = await googleAuthRequest(
+        credentialResponse.credential,
+        mode !== "login"
+      );
       if (res.data) {
+        onBeforeLogin?.();
         login(res.data.user, res.data.token);
         toast.success("Signed in with Google");
         router.push("/");

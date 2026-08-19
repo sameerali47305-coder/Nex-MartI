@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
 
@@ -29,6 +29,7 @@ export default function ProductFilters({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const selectedSlugs = category ? category.split(",").filter(Boolean) : [];
   const activeCount = selectedSlugs.length + (price ? 1 : 0);
@@ -38,7 +39,9 @@ export default function ProductFilters({
     if (value) params.set(key, value);
     else params.delete(key);
     params.delete("page");
-    router.push(`/products?${params.toString()}`);
+    startTransition(() => {
+      router.push(`/products?${params.toString()}`);
+    });
   }
 
   function toggleCategory(slug: string) {
@@ -54,7 +57,7 @@ export default function ProductFilters({
   }
 
   const panel = (
-    <div className="space-y-6">
+    <div className={`space-y-6 transition-opacity ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">Filters</h2>
         {activeCount > 0 && (
