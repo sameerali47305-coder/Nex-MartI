@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationProps {
   currentPage: number;
@@ -36,15 +37,15 @@ export default function Pagination({
 
   return (
     <div className="mt-12 flex items-center justify-center gap-3">
-
       <Link
         href={buildHref(Math.max(1, currentPage - 1), searchParams)}
         aria-disabled={currentPage === 1}
-        className={`rounded-lg border border-gray-300 px-4 py-2 transition hover:bg-gray-100 ${
+        aria-label="Previous page"
+        className={`rounded-lg border border-gray-300 p-2 transition hover:bg-gray-100 ${
           currentPage === 1 ? "pointer-events-none opacity-50" : ""
         }`}
       >
-        Previous
+        <ChevronLeft size={18} />
       </Link>
 
       {pages.map((page) => (
@@ -64,13 +65,13 @@ export default function Pagination({
       <Link
         href={buildHref(Math.min(totalPages, currentPage + 1), searchParams)}
         aria-disabled={currentPage === totalPages}
-        className={`rounded-lg border border-gray-300 px-4 py-2 transition hover:bg-gray-100 ${
+        aria-label="Next page"
+        className={`rounded-lg border border-gray-300 p-2 transition hover:bg-gray-100 ${
           currentPage === totalPages ? "pointer-events-none opacity-50" : ""
         }`}
       >
-        Next
+        <ChevronRight size={18} />
       </Link>
-
     </div>
   );
 }

@@ -51,14 +51,14 @@ export default function CategorySlider({ categories }: { categories: UICategory[
               }`}
             />
             <div className="relative flex items-center gap-6 p-6">
-              <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl bg-gray-50">
+              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gray-50">
                 {category.image && (
                   <Image
                     src={category.image}
                     alt={category.name}
                     fill
-                    sizes="112px"
-                    className="object-contain p-4 transition duration-300 group-hover:scale-110"
+                    sizes="80px"
+                    className="object-cover transition duration-300 group-hover:scale-110"
                   />
                 )}
               </div>
