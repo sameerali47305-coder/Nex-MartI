@@ -1,5 +1,8 @@
-import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+"use client";
+
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 interface PaginationProps {
   currentPage: number;
@@ -29,49 +32,59 @@ export default function Pagination({
   totalPages,
   searchParams,
 }: PaginationProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   if (totalPages <= 1) {
     return null;
   }
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
+  function goTo(page: number) {
+    startTransition(() => {
+      router.push(buildHref(page, searchParams));
+    });
+  }
+
   return (
-    <div className="mt-12 flex items-center justify-center gap-3">
-      <Link
-        href={buildHref(Math.max(1, currentPage - 1), searchParams)}
-        aria-disabled={currentPage === 1}
+    <div className={`mt-12 flex items-center justify-center gap-3 transition-opacity ${isPending ? "opacity-50" : ""}`}>
+
+      <button
+        onClick={() => goTo(Math.max(1, currentPage - 1))}
+        disabled={currentPage === 1 || isPending}
         aria-label="Previous page"
-        className={`rounded-lg border border-gray-300 p-2 transition hover:bg-gray-100 ${
-          currentPage === 1 ? "pointer-events-none opacity-50" : ""
-        }`}
+        className="rounded-lg border border-gray-300 p-2 transition hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
       >
         <ChevronLeft size={18} />
-      </Link>
+      </button>
 
       {pages.map((page) => (
-        <Link
+        <button
           key={page}
-          href={buildHref(page, searchParams)}
-          className={
+          onClick={() => goTo(page)}
+          disabled={isPending}
+          className={`cursor-pointer disabled:pointer-events-none ${
             page === currentPage
               ? "rounded-lg bg-blue-600 px-4 py-2 text-white"
               : "rounded-lg border border-gray-300 px-4 py-2 transition hover:bg-gray-100"
-          }
+          }`}
         >
           {page}
-        </Link>
+        </button>
       ))}
 
-      <Link
-        href={buildHref(Math.min(totalPages, currentPage + 1), searchParams)}
-        aria-disabled={currentPage === totalPages}
+      <button
+        onClick={() => goTo(Math.min(totalPages, currentPage + 1))}
+        disabled={currentPage === totalPages || isPending}
         aria-label="Next page"
-        className={`rounded-lg border border-gray-300 p-2 transition hover:bg-gray-100 ${
-          currentPage === totalPages ? "pointer-events-none opacity-50" : ""
-        }`}
+        className="rounded-lg border border-gray-300 p-2 transition hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
       >
         <ChevronRight size={18} />
-      </Link>
+      </button>
+
+      {isPending && <Loader2 size={18} className="ml-1 animate-spin text-blue-600" />}
+
     </div>
   );
 }

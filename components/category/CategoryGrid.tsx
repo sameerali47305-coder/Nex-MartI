@@ -26,12 +26,12 @@ export default function CategoryGrid({ categories }: { categories: UICategory[] 
 
   return (
     <div>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 transition-opacity">
         {visible.map((cat) => (
           <CategoryCard key={cat.slug} category={cat} />
         ))}
       </div>
-      
+
       <div className="mt-12 flex items-center justify-center gap-3">
         <button
           onClick={() => setPage((p) => Math.max(1, p - 1))}
