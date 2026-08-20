@@ -13,6 +13,7 @@ import {
   updateDoc,
   writeBatch,
   getDocs,
+  deleteDoc,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firestore-client";
@@ -141,4 +142,12 @@ export async function markMessagesRead(conversationId: string, viewerRole: "cust
   const batch = writeBatch(db);
   snap.docs.forEach((d) => batch.update(d.ref, { read: true }));
   await batch.commit();
+}
+
+export async function deleteConversation(conversationId: string) {
+  const messagesSnap = await getDocs(collection(db, "conversations", conversationId, "messages"));
+  const batch = writeBatch(db);
+  messagesSnap.docs.forEach((d) => batch.delete(d.ref));
+  await batch.commit();
+  await deleteDoc(doc(db, "conversations", conversationId));
 }

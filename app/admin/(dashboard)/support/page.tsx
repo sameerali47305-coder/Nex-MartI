@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MessageSquare, Send, Search, UserPlus, X, User, Check, CheckCheck } from "lucide-react";
+import { MessageSquare, Send, Search, UserPlus, X, User, Check, CheckCheck, Trash2 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
 import { fetchUsers, type AdminUser } from "@/helpers/adminApi";
@@ -12,6 +12,7 @@ import {
   sendChatMessage,
   markConversationRead,
   markMessagesRead,
+  deleteConversation,
   type ConversationSummary,
   type ChatMessage,
 } from "@/lib/chat";
@@ -53,6 +54,16 @@ export default function AdminSupportPage() {
     if (!trimmed || !activeId || !user) return;
     setText("");
     await sendChatMessage(activeId, user.id, "admin", trimmed);
+  }
+
+  async function handleDeleteConversation(id: string) {
+    if (!confirm("Delete this conversation? This can't be undone.")) return;
+    try {
+      await deleteConversation(id);
+      if (activeId === id) setActiveId(null);
+    } catch {
+      alert("Failed to delete conversation. Please try again.");
+    }
   }
 
   function openPicker() {
@@ -123,17 +134,17 @@ export default function AdminSupportPage() {
             <p className="p-4 text-sm text-gray-400">No conversations found.</p>
           )}
           {filteredConversations.map((c) => (
-            <button
+            <div
               key={c.id}
               onClick={() => setActiveId(c.id)}
-              className={`flex w-full items-center gap-3 border-b border-blue-100 p-3 text-left transition hover:bg-white ${
+              className={`group relative flex w-full cursor-pointer items-center gap-3 border-b border-blue-100 p-3 text-left transition hover:bg-white ${
                 activeId === c.id ? "bg-white ring-2 ring-inset ring-blue-400" : ""
               }`}
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-blue-50 text-blue-500">
                 <User size={18} />
               </span>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 pr-6">
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-sm font-semibold text-gray-900">{c.customerName}</p>
                   <span className="shrink-0 text-[10px] text-gray-400">{formatTime(c.lastMessageAt)}</span>
@@ -143,7 +154,19 @@ export default function AdminSupportPage() {
                   {c.unreadByAdmin && <span className="h-2 w-2 shrink-0 rounded-full bg-blue-600" />}
                 </div>
               </div>
-            </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteConversation(c.id);
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-gray-400 opacity-0 transition hover:bg-red-50 hover:text-red-600 group-hover:opacity-100"
+                title="Delete conversation"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
           ))}
         </div>
 
