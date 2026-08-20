@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Loader2, PackageSearch } from "lucide-react";
+import { CheckCircle2, Loader2, PackageSearch, Package } from "lucide-react";
 
 import Container from "@/components/ui/Container";
 import { getToken } from "@/helpers/authApi";
@@ -90,40 +90,54 @@ export default function CheckoutSuccessClient() {
 
       {status === "found" && order && (
         <>
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-50 text-green-600">
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-green-50 text-green-600">
             <CheckCircle2 size={40} />
+            <span className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white shadow-sm">
+              <Package size={14} />
+            </span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Payment Successful!</h1>
           <p className="text-gray-500">
-            Thank you for your order. A confirmation has been recorded.
+            Thank you for your order — we&apos;ve sent a confirmation to your email.
           </p>
 
-          <div className="mt-2 w-full rounded-lg border border-gray-100 bg-gray-50 p-4 text-left">
-            <p className="mb-2 text-sm font-medium text-gray-900">
-              Order #{order.id.slice(-8).toUpperCase()}
-            </p>
-            {order.items.map((item, i) => (
-              <div key={i} className="flex justify-between text-sm text-gray-600">
-                <span>{item.name} × {item.quantity}</span>
-                <span>${(item.price * item.quantity).toFixed(2)}</span>
+          <div className="mt-2 w-full overflow-hidden rounded-xl border border-gray-100 text-left">
+            <div className="flex items-center justify-between bg-blue-50 px-5 py-3">
+              <span className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+                Order #{order.id.slice(-8).toUpperCase()}
+              </span>
+              <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700">
+                Paid
+              </span>
+            </div>
+            <div className="space-y-2 bg-white p-5">
+              {order.items.map((item, i) => (
+                <div key={i} className="flex justify-between text-sm">
+                  <span className="text-gray-600">
+                    {item.name} <span className="text-gray-400">× {item.quantity}</span>
+                  </span>
+                  <span className="font-medium text-gray-900">
+                    ${(item.price * item.quantity).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+              <div className="mt-2 flex justify-between border-t border-gray-100 pt-3 text-base">
+                <span className="font-semibold text-gray-900">Total Paid</span>
+                <span className="font-bold text-blue-600">${order.total.toFixed(2)}</span>
               </div>
-            ))}
-            <div className="mt-2 flex justify-between border-t border-gray-200 pt-2 text-sm font-semibold text-gray-900">
-              <span>Total</span>
-              <span>${order.total.toFixed(2)}</span>
             </div>
           </div>
 
-          <div className="mt-2 flex gap-3">
+          <div className="mt-2 flex w-full gap-3">
             <Link
               href={`/orders/${order.id}`}
-              className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition hover:bg-blue-700"
+              className="flex-1 rounded-lg bg-blue-600 px-6 py-3 text-center font-medium text-white transition hover:bg-blue-700"
             >
               View Order
             </Link>
             <Link
               href="/products"
-              className="rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 transition hover:bg-gray-50"
+              className="flex-1 rounded-lg border border-gray-300 px-6 py-3 text-center font-medium text-gray-700 transition hover:bg-gray-50"
             >
               Continue Shopping
             </Link>
