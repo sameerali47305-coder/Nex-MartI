@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import toast from "react-hot-toast";
 import {
   Search,
@@ -32,6 +32,7 @@ const navLinks = [
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -238,15 +239,26 @@ export default function Navbar() {
       <div className="hidden border-t border-gray-100 md:block">
         <Container>
           <nav className="flex h-12 items-center gap-8 text-sm font-medium text-gray-700">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="transition hover:text-blue-600"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive =
+                link.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`relative py-1 transition hover:text-blue-600 ${
+                    isActive ? "font-semibold text-blue-600" : ""
+                  }`}
+                >
+                  {link.label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-blue-600" />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
         </Container>
       </div>
@@ -270,16 +282,26 @@ export default function Navbar() {
                 />
               </form>
 
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium transition hover:bg-gray-100 hover:text-blue-600"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isActive =
+                  link.href === "/"
+                    ? pathname === "/"
+                    : pathname.startsWith(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+                      isActive
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
 
               <div className="mt-2 flex items-center gap-4 border-t border-gray-100 px-3 pt-4">
                 <Link
