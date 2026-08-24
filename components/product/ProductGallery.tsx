@@ -11,45 +11,39 @@ export default function ProductGallery({
 }: ProductGalleryProps) {
   return (
     <div className="space-y-4">
-
       {/* Main Image */}
-      <div className="flex h-[500px] items-center justify-center rounded-xl border border-gray-200 bg-white p-8">
-
+      <div className="flex h-[420px] w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="relative h-full w-full">
           <Image
             src={image}
             alt={name}
             fill
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-contain"
+            sizes="(max-width: 1024px) 100vw, 440px"
+            className="object-cover"
             priority
           />
         </div>
-
       </div>
 
       {/* Thumbnails (UI Only) */}
       <div className="grid grid-cols-4 gap-3">
-
         {[1, 2, 3, 4].map((item) => (
           <div
             key={item}
-            className="flex h-24 cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white p-2 transition hover:border-blue-600"
+            className="h-20 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition hover:border-blue-600 hover:shadow-sm"
           >
-            <div className="relative h-16 w-16">
+            <div className="relative h-full w-full">
               <Image
                 src={image}
                 alt={name}
                 fill
-                sizes="64px"
-                className="object-contain"
-              />
+                sizes="96px"
+                className="object-cover"
+                />
             </div>
           </div>
         ))}
-
       </div>
-
     </div>
   );
 }

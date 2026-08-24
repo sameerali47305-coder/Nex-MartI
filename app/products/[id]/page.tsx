@@ -48,7 +48,7 @@ export default async function ProductDetailsPage({
           </span>
         </div>
 
-        <section className="grid gap-12 lg:grid-cols-2">
+        <section className="grid gap-10 lg:grid-cols-[440px_1fr]">
           <ProductGallery
             image={product.image}
             name={product.name}
