@@ -81,6 +81,10 @@ const ProductSchema = new Schema<IProduct>(
   { timestamps: true }
 );
 
+// Indexes to speed up queries by category, price ranges, and latest arrivals
+ProductSchema.index({ category: 1, price: 1 });
+ProductSchema.index({ createdAt: -1 });
+
 const Product = models.Product || model<IProduct>("Product", ProductSchema);
 
 export default Product;

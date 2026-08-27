@@ -52,8 +52,13 @@ export default function ProductFilters({
   }
 
   function clearAll() {
-    updateParam("category", "");
-    updateParam("price", "");
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("category");
+    params.delete("price");
+    params.delete("page");
+    startTransition(() => {
+      router.push(`/products?${params.toString()}`);
+    });
   }
 
   const panel = (
