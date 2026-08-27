@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, Loader2 } from "lucide-react";
 
 interface CategoryOption {
   name: string;
@@ -64,9 +64,17 @@ export default function ProductFilters({
   const panel = (
     <div className={`space-y-6 transition-opacity ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-gray-900">Filters</h2>
+        <h2 className="flex items-center gap-2 font-semibold text-gray-900">
+          Filters
+          {isPending && <Loader2 size={14} className="animate-spin text-blue-600" />}
+        </h2>
         {activeCount > 0 && (
-          <button onClick={clearAll} className="text-sm font-medium text-blue-600 hover:underline">
+          <button
+            onClick={clearAll}
+            disabled={isPending}
+            className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline disabled:pointer-events-none disabled:opacity-60"
+          >
+            {isPending && <Loader2 size={13} className="animate-spin" />}
             Clear all
           </button>
         )}
@@ -81,7 +89,8 @@ export default function ProductFilters({
                 type="checkbox"
                 checked={selectedSlugs.includes(cat.slug)}
                 onChange={() => toggleCategory(cat.slug)}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                disabled={isPending}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 disabled:opacity-60"
               />
               {cat.name}
             </label>
@@ -99,13 +108,18 @@ export default function ProductFilters({
                 name="price"
                 checked={price === range.value}
                 onChange={() => updateParam("price", range.value)}
-                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-600"
+                disabled={isPending}
+                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-600 disabled:opacity-60"
               />
               {range.label}
             </label>
           ))}
           {price && (
-            <button onClick={() => updateParam("price", "")} className="text-sm text-blue-600 hover:underline">
+            <button 
+              onClick={() => updateParam("price", "")} 
+              disabled={isPending}
+              className="text-sm text-blue-600 hover:underline disabled:pointer-events-none disabled:opacity-60"
+            >
               Clear price
             </button>
           )}
