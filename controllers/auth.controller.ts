@@ -18,6 +18,7 @@ import {
   resetPassword,
   loginOrRegisterWithGoogle,
   linkGoogleAccount,
+  adminLoginWithGoogle,
   AuthError,
 } from "@/services/auth.service";
 import { withAuth } from "@/middleware/auth";
@@ -199,6 +200,24 @@ export const linkGoogleController = withAuth(async (req: NextRequest, user) => {
     return NextResponse.json({ success: false, message: "Failed to link Google account." }, { status: 500 });
   }
 });
+
+export async function adminGoogleAuthController(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const parsed = googleAuthSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, message: parsed.error.issues[0].message }, { status: 400 });
+    }
+    const { token, user } = await adminLoginWithGoogle(parsed.data.credential);
+    return NextResponse.json({ success: true, message: "Signed in with Google.", data: { token, user } });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return NextResponse.json({ success: false, message: error.message }, { status: error.status });
+    }
+    console.error("Admin Google auth error:", error);
+    return NextResponse.json({ success: false, message: "Google sign-in failed. Please try again." }, { status: 500 });
+  }
+}
 
 function handleAuthError(error: unknown, fallbackMessage: string) {
   if (error instanceof AuthError) {

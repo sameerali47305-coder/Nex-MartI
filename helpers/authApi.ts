@@ -93,3 +93,9 @@ export function googleAuthRequest(credential: string, allowCreate: boolean = tru
     { method: "POST", body: JSON.stringify({ credential, allowCreate }) }
   );
 }
+export function adminGoogleAuthRequest(credential: string) {
+  return apiRequest<{ token: string; user: { id: string; name: string; email: string; role: string; avatar?: string } }>(
+    "/api/auth/google/admin",
+    { method: "POST", body: JSON.stringify({ credential }) }
+  );
+}

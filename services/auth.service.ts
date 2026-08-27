@@ -259,3 +259,33 @@ export async function linkGoogleAccount(userId: string, idToken: string) {
 
   return { success: true, avatar: currentUser.avatar };
 }
+
+export async function adminLoginWithGoogle(idToken: string) {
+  await connectDB();
+  const profile = await verifyGoogleToken(idToken);
+  const user = await User.findOne({ email: profile.email });
+
+  if (!user || user.role !== "admin") {
+    throw new AuthError("This Google account doesn't have admin access.", 403);
+  }
+
+  if (!user.googleId) {
+    user.googleId = profile.googleId;
+    if (!user.avatar) user.avatar = profile.avatar;
+    await user.save();
+  }
+
+  const token = generateToken({ userId: user._id.toString(), email: user.email, role: user.role });
+
+  return {
+    token,
+    user: {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      googleLinked: true,
+    },
+  };
+}
