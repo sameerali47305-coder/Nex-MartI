@@ -260,10 +260,19 @@ export async function updateOrderStatus(orderId: string, input: UpdateOrderStatu
     .catch((err) => console.error("PUSH ERROR:", err));
 
   User.findById(orderUserId)
-    .then((u) => {
-      if (u) {
-        return sendOrderStatusUpdateEmail(u.email, u.name, order._id.toString(), input.status);
-      }
+    .then(async (u) => {
+      if (!u) return;
+      const pdfBuffer = await generateInvoicePdf({
+        id: order._id.toString(),
+        items: order.items,
+        shippingAddress: order.shippingAddress,
+        subtotal: order.subtotal,
+        shipping: order.shipping,
+        total: order.total,
+        paymentStatus: order.paymentStatus,
+        createdAt: order.createdAt,
+      });
+      return sendOrderStatusUpdateEmail(u.email, u.name, order._id.toString(), input.status, pdfBuffer);
     })
     .catch((err) => console.error("STATUS EMAIL ERROR:", err));
 

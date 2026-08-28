@@ -159,7 +159,8 @@ export async function sendOrderStatusUpdateEmail(
   to: string,
   name: string,
   orderId: string,
-  status: string
+  status: string,
+  pdfBuffer: Buffer
 ) {
   await transporter.sendMail({
     from: `"NexMart" <${process.env.EMAIL_FROM}>`,
@@ -169,10 +170,14 @@ export async function sendOrderStatusUpdateEmail(
       <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
         <h2 style="color:#2563eb;">Hi ${name},</h2>
         <p>Your order status has been updated to: <strong style="text-transform:capitalize;">${status}</strong></p>
+        <p>Your receipt is attached to this email.</p>
         <p style="margin-top:16px;color:#6b7280;font-size:13px;">
           Order ID: ${orderId}
         </p>
       </div>
     `,
+    attachments: [
+      { filename: `invoice-${orderId}.pdf`, content: pdfBuffer },
+    ],
   });
 }
