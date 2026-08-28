@@ -4,7 +4,7 @@ import Cart from "@/models/Cart";
 import User from "@/models/User";
 import type { CreateOrderInput } from "@/validations/order";
 import { generateInvoicePdf } from "@/lib/generateInvoicePdf";
-import { sendOrderPlacedEmail } from "@/lib/sendEmail";
+import { sendOrderPlacedEmail, sendOrderStatusUpdateEmail } from "@/lib/sendEmail";
 import type { UpdateOrderStatusInput } from "@/validations/admin";
 import { sendPushToUser } from "@/lib/sendPushNotification";
 import { createNotification, notifyAllAdmins } from "@/services/notification.service";
@@ -258,6 +258,14 @@ export async function updateOrderStatus(orderId: string, input: UpdateOrderStatu
 
   sendPushToUser(orderUserId, { title: notifTitle, body: notifBody })
     .catch((err) => console.error("PUSH ERROR:", err));
+
+  User.findById(orderUserId)
+    .then((u) => {
+      if (u) {
+        return sendOrderStatusUpdateEmail(u.email, u.name, order._id.toString(), input.status);
+      }
+    })
+    .catch((err) => console.error("STATUS EMAIL ERROR:", err));
 
   return { id: order._id.toString(), status: order.status };
 }

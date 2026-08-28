@@ -36,6 +36,7 @@ export async function sendOtpEmail(to: string, name: string, otp: string) {
     `,
   });
 }
+
 //contact message 
 export async function sendContactMessage(
   name: string,
@@ -58,6 +59,7 @@ export async function sendContactMessage(
     `,
   });
 }
+
 export async function sendSubscriptionConfirmation(email: string) {
   await transporter.sendMail({
     from: `"NexMart" <${process.env.EMAIL_FROM}>`,
@@ -75,6 +77,7 @@ export async function sendSubscriptionConfirmation(email: string) {
     `,
   });
 }
+
 //resend otp
 export async function sendPasswordResetOtp(to: string, name: string, otp: string) {
   await transporter.sendMail({
@@ -149,5 +152,27 @@ export async function sendOrderPlacedEmail(
     attachments: [
       { filename: `invoice-${orderId}.pdf`, content: pdfBuffer },
     ],
+  });
+}
+
+export async function sendOrderStatusUpdateEmail(
+  to: string,
+  name: string,
+  orderId: string,
+  status: string
+) {
+  await transporter.sendMail({
+    from: `"NexMart" <${process.env.EMAIL_FROM}>`,
+    to,
+    subject: `Order #${orderId.slice(-8).toUpperCase()} is now ${status}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
+        <h2 style="color:#2563eb;">Hi ${name},</h2>
+        <p>Your order status has been updated to: <strong style="text-transform:capitalize;">${status}</strong></p>
+        <p style="margin-top:16px;color:#6b7280;font-size:13px;">
+          Order ID: ${orderId}
+        </p>
+      </div>
+    `,
   });
 }
