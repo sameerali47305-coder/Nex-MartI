@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SlidersHorizontal, X, Loader2 } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
+import { useFilterPending } from "./FilterPendingContext";
 
 interface CategoryOption {
   name: string;
@@ -29,7 +30,7 @@ export default function ProductFilters({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const { isPending, startFilterTransition: startTransition } = useFilterPending();
 
   const selectedSlugs = category ? category.split(",").filter(Boolean) : [];
   const activeCount = selectedSlugs.length + (price ? 1 : 0);
@@ -62,11 +63,10 @@ export default function ProductFilters({
   }
 
   const panel = (
-    <div className={`space-y-6 transition-opacity ${isPending ? "opacity-50 pointer-events-none" : ""}`}>
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-semibold text-gray-900">
           Filters
-          {isPending && <Loader2 size={14} className="animate-spin text-blue-600" />}
         </h2>
         {activeCount > 0 && (
           <button
@@ -74,7 +74,6 @@ export default function ProductFilters({
             disabled={isPending}
             className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline disabled:pointer-events-none disabled:opacity-60"
           >
-            {isPending && <Loader2 size={13} className="animate-spin" />}
             Clear all
           </button>
         )}

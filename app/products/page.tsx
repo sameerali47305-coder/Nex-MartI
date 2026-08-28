@@ -5,7 +5,8 @@ import Container from "@/components/ui/Container";
 import ProductSearch from "@/components/product/ProductSearch";
 import ProductFilters from "@/components/product/ProductFilters";
 import ProductSort from "@/components/product/ProductSort";
-import ProductGrid from "@/components/product/ProductGrid";
+import ProductGridWithSkeleton from "@/components/product/ProductGridWithSkeleton";
+import { FilterPendingProvider } from "@/components/product/FilterPendingContext";
 import Pagination from "@/components/product/Pagination";
 import { listProducts } from "@/services/product.service";
 import { listCategories } from "@/services/category.service";
@@ -62,7 +63,6 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   return (
     <main className="bg-gray-50 py-10">
       <Container>
-
         <div className="mb-4 flex items-center gap-2 text-sm text-gray-500">
           <Link href="/" className="hover:text-blue-600">
             Home
@@ -88,45 +88,42 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           </Suspense>
         </div>
 
-        <div className="flex flex-col gap-6 lg:flex-row">
+        <FilterPendingProvider>
+          <div className="flex flex-col gap-6 lg:flex-row">
+            <Suspense fallback={null}>
+              <ProductFilters
+                category={category}
+                price={params.price ?? ""}
+                categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
+              />
+            </Suspense>
 
-          <Suspense fallback={null}>
-            <ProductFilters
-              category={category}
-              price={params.price ?? ""}
-              categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
-            />
-          </Suspense>
-
-          <div className="flex-1">
-
-            <div className="mb-4 flex items-center justify-between gap-4">
-              <p className="text-sm text-gray-500">
-                {total} {total === 1 ? "product" : "products"} found
-              </p>
-              <Suspense fallback={null}>
-                <ProductSort sort={sort} />
-              </Suspense>
-            </div>
-
-            {uiProducts.length > 0 ? (
-              <ProductGrid products={uiProducts} />
-            ) : (
-              <div className="rounded-lg border border-gray-200 bg-white py-16 text-center text-gray-500">
-                No products match your search or filters.
+            <div className="flex-1">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <p className="text-sm text-gray-500">
+                  {total} {total === 1 ? "product" : "products"} found
+                </p>
+                <Suspense fallback={null}>
+                  <ProductSort sort={sort} />
+                </Suspense>
               </div>
-            )}
 
+              {uiProducts.length > 0 ? (
+                <ProductGridWithSkeleton products={uiProducts} />
+              ) : (
+                <div className="rounded-lg border border-gray-200 bg-white py-16 text-center text-gray-500">
+                  No products match your search or filters.
+                </div>
+              )}
+            </div>
           </div>
-
-        </div>
+        </FilterPendingProvider>
 
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           searchParams={params}
         />
-
       </Container>
     </main>
   );
