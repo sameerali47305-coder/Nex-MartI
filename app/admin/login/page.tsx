@@ -171,7 +171,7 @@ export default function AdminLoginPage() {
               onSuccess={handleGoogleSuccess}
               onError={() => toast.error("Google sign-in was cancelled or failed.")}
               shape="rectangular"
-              width="100%"
+              width="320"
             />
           </div>
         </div>
